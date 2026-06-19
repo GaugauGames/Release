@@ -1,0 +1,68 @@
+<!--
+body {
+	color:#FFFFFF;
+	background-color:#880000;
+	min-height: 75rem;
+	padding-bottom: 4.5rem;
+}
+
+//form, table, textarea, select, input {
+//	margin:0px;
+//	padding:0px;
+//}
+
+
+.page_title {
+	color:yellow;
+}
+
+a {
+	text-decoration:none;
+	color:#FF6600;
+}
+
+a:hover {
+	text-decoration:underline;
+	color:#FFFF00;
+}
+
+img {
+	border-width:0;
+}
+
+.td_nowrap {
+	 white-space: nowrap;
+}
+
+//.label {
+//	border:solid 0px #FFFFFF;
+//	background-color:#FFFFFF;
+//	font-weight:bold;
+//	color:#880000;
+//	margin:0px;
+//	padding:1px 1px;
+//	width:90%
+//}
+
+// 折り畳み部分調整
+.accordion-header {
+	padding:0.25rem;
+	color:#000000;
+}
+.accordion-body {
+	padding:0.25rem;
+	color:#000000;
+}
+.accordion-button {
+	padding:0.1rem;
+}
+
+// カラフルテキストエリア
+.colorful-border textarea {
+    border: 1px solid #ba68c8;
+}
+.colorful-border .form-control:focus {
+    border: 1px solid #ba68c8;
+    box-shadow: 0 0 0 0.2rem rgba(186, 104, 200, .25);
+}
+-->

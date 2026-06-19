@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="ja">
+<HEAD>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta http-equiv="Content-Script-Type" content="text/javascript">
+	<meta http-equiv="Content-Style-Type" content="text/css">
+	<meta name="keywords" content="モンハン,モンハンライズ,サンブレイク,MHRise,MHR,モンハンルーレット,ルーレット,ランダム">
+	<meta name="description" content="モンハンのクエスト、武器をランダムで決定します。">
+
+	<script src="./js/common.js?ver=20250329" type="text/javascript"></script>
+	<script src="./js/data_mhrise.js?ver=20250329" type="text/javascript"></script>
+	<script src="./js/roulette.js?ver=20250329" type="text/javascript"></script>
+
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+	<link href="https://use.fontawesome.com/releases/v6.5.1/css/all.css" rel="stylesheet">
+	<link rel="stylesheet" href="./css/mainstyle.css" type="text/css">
+	<style>
+		body { background:#880000 url(./img/logo_sb.png) no-repeat 50% 10% fixed; }
+	</style>
+	
+	<title>ルーレット for MHR:SUNBREAK</title>
+</HEAD>
+<BODY onload="getCookie(0);clear_history();">
+	<main class="container">
+	<h3 class="page_title">ルーレット for MHR:SUNBREAK</h3>
+
+	<div class="accordion-item">
+		<div class="accordion-header" id="setting">
+			<button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#setting_body" aria-expanded="true" aria-controls="setting_body">
+			設定 >>
+			</button>
+		</div>
+		<div id="setting_body" class="accordion-collapse collapse" aria-labelledby="setting">
+			<div class="accordion-body">
+				<div class="form-group colorful-border">
+					<label for="bind">【縛り】</label>
+					<textarea class="form-control" id="bind" rows="5" onChange="sibari()"></textarea>
+				</div>
+				<BR>
+				【条件】<BR>
+				<div class="form-check form-check-inline form-switch">
+					<input class="form-check-input" type="checkbox" id="bukirandom">
+					<label class="form-check-label" for="bukirandom">武器をランダム</label>
+				</div>
+				<div class="form-check form-check-inline form-switch">
+					<input class="form-check-input" type="checkbox" id="bukibarake">
+					<label class="form-check-label" for="bukibarake">武器重複なし</label>
+				</div>
+				<div class="form-check form-check-inline form-switch" style="display:none;">
+					<input class="form-check-input" type="checkbox" id="subweapon">
+					<label class="form-check-label" for="subweapon">サブ武器を含める</label>
+				</div>
+				<div class="accordion-item">
+					<div class="accordion-header" id="TargetWeapon">
+						<button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#TargetWeapon_body" aria-expanded="true" aria-controls="TargetWeapon_body">
+						【対象武器】 >>
+						</button>
+					</div>
+					<div id="TargetWeapon_body" class="accordion-collapse collapse" aria-labelledby="TargetWeapon">
+						<div class="accordion-body">
+							<div class="form-group colorful-border">
+								<div class="form-check form-check-inline form-switch">
+									<input class="form-check-input" type="checkbox" id="WeaponChk1">
+									<label class="form-check-label" for="WeaponChk1">大剣</label>
+								</div>
+								<div class="form-check form-check-inline form-switch">
+									<input class="form-check-input" type="checkbox" id="WeaponChk2">
+									<label class="form-check-label" for="WeaponChk2">太刀</label>
+								</div>
+								<div class="form-check form-check-inline form-switch">
+									<input class="form-check-input" type="checkbox" id="WeaponChk3">
+									<label class="form-check-label" for="WeaponChk3">片手剣</label>
+								</div>
+								<div class="form-check form-check-inline form-switch">
+									<input class="form-check-input" type="checkbox" id="WeaponChk4">
+									<label class="form-check-label" for="WeaponChk4">双剣</label>
+								</div>
+								<div class="form-check form-check-inline form-switch">
+									<input class="form-check-input" type="checkbox" id="WeaponChk5">
+									<label class="form-check-label" for="WeaponChk5">ランス</label>
+								</div>
+								<div class="form-check form-check-inline form-switch">
+									<input class="form-check-input" type="checkbox" id="WeaponChk6">
+									<label class="form-check-label" for="WeaponChk6">ガンランス</label>
+								</div>
+								<div class="form-check form-check-inline form-switch">
+									<input class="form-check-input" type="checkbox" id="WeaponChk7">
+									<label class="form-check-label" for="WeaponChk7">ハンマー</label>
+								</div>
+								<div class="form-check form-check-inline form-switch">
+									<input class="form-check-input" type="checkbox" id="WeaponChk8">
+									<label class="form-check-label" for="WeaponChk8">狩猟笛</label>
+								</div>
+								<div class="form-check form-check-inline form-switch">
+									<input class="form-check-input" type="checkbox" id="WeaponChk9">
+									<label class="form-check-label" for="WeaponChk9">スラッシュアックス</label>
+								</div>
+								<div class="form-check form-check-inline form-switch">
+									<input class="form-check-input" type="checkbox" id="WeaponChk10">
+									<label class="form-check-label" for="WeaponChk10">チャージアックス</label>
+								</div>
+								<div class="form-check form-check-inline form-switch">
+									<input class="form-check-input" type="checkbox" id="WeaponChk11">
+									<label class="form-check-label" for="WeaponChk11">操虫棍</label>
+								</div>
+								<div class="form-check form-check-inline form-switch">
+									<input class="form-check-input" type="checkbox" id="WeaponChk12">
+									<label class="form-check-label" for="WeaponChk12">ライトボウガン</label>
+								</div>
+								<div class="form-check form-check-inline form-switch">
+									<input class="form-check-input" type="checkbox" id="WeaponChk13">
+									<label class="form-check-label" for="WeaponChk13">ヘビィボウガン</label>
+								</div>
+								<div class="form-check form-check-inline form-switch">
+									<input class="form-check-input" type="checkbox" id="WeaponChk14">
+									<label class="form-check-label" for="WeaponChk14">弓</label>
+								</div>
+								<BR>
+								<div class="btn-group">
+									<input type="button" class="btn btn-outline-dark btn-sm" value="全てON" onClick="allChkTargetWeapon(1)">
+									<input type="button" class="btn btn-outline-dark btn-sm" value="全てOFF" onClick="allChkTargetWeapon(0)">
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				チーム数：<select id="teamnum"><option selected>1<option>2<option>3</select>　
+				<div class="form-check form-check-inline form-switch">
+					<input class="form-check-input" type="checkbox" id="teamrandom">
+					<label class="form-check-label" for="teamrandom">チーム分けをランダム</label>
+				</div>
+				<BR>
+				<div class="form-check form-check-inline form-switch">
+					<input class="form-check-input" type="checkbox" id="bindrandom">
+					<label class="form-check-label" for="bindrandom">縛りを付加</label>
+				</div>
+				<select id="saisyou"></select>～<select id="saidai" onChange="setmin()"></select>個<BR>
+				<div class="form-check form-check-inline form-switch">
+					<input class="form-check-input" type="checkbox" id="EffectDisable">
+					<label class="form-check-label" for="EffectDisable">演出無効</label>
+				</div>
+				<BR>
+				<div class="form-check form-check-inline form-switch">
+					<input class="form-check-input" type="checkbox" id="Duplication">
+					<label class="form-check-label" for="Duplication">クエスト過去10件被らなくする</label>
+				</div>
+				<BR>
+				ルーレット指定：
+				<div class="form-check form-check-inline form-switch">
+					<input class="form-check-input" type="checkbox" id="QuestChk" onChange="make_questlist()">
+					<label class="form-check-label" for="QuestChk">クエスト</label>
+				</div>
+				<div class="form-check form-check-inline form-switch">
+					<input class="form-check-input" type="checkbox" id="MonsterChk" onChange="make_questlist()">
+					<label class="form-check-label" for="MonsterChk">モンスター</label>
+				</div>
+				<div class="form-check form-check-inline form-switch">
+					<input class="form-check-input" type="checkbox" id="KaiiTokyuChk" onChange="make_questlist()">
+					<label class="form-check-label" for="KaiiTokyuChk">傀異討究</label>
+				</div>
+
+				<BR>
+				<div class="accordion-item">
+					<div class="accordion-header" id="target">
+						<button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#target_body" aria-expanded="true" aria-controls="target_body">
+						【対象クエスト】 >>
+						</button>
+					</div>
+					<div id="target_body" class="accordion-collapse collapse" aria-labelledby="target">
+						<div class="accordion-body">
+							<table class="table table-danger table-striped">
+								<thead>
+								<tr><td class="td_nowrap">種類</td><td class="td_nowrap">里</td><td class="td_nowrap">下位</td><td class="td_nowrap">上位</td><td class="td_nowrap">MR</td><td class="td_nowrap">EX</td></tr>
+								</thead>
+								<tbody>
+								<tr><td>狩猟討伐</td>
+								<td><input type="checkbox" class="form-check-input" id="questcheck" onClick="make_questlist()"></td>
+								<td><input type="checkbox" class="form-check-input" id="questcheck" onClick="make_questlist()"></td>
+								<td><input type="checkbox" class="form-check-input" id="questcheck" onClick="make_questlist()"></td>
+								<td><input type="checkbox" class="form-check-input" id="questcheck" onClick="make_questlist()"></td>
+								<td><input type="hidden"   id="questcheck" disabled >－</td>
+								</tr>
+								<tr><td>高難度※</td>
+								<td><input type="checkbox" class="form-check-input" id="questcheck" onClick="make_questlist()"></td>
+								<td><input type="hidden"   id="questcheck" disabled >－</td>
+								<td><input type="checkbox" class="form-check-input" id="questcheck" onClick="make_questlist()"></td>
+								<td><input type="checkbox" class="form-check-input" id="questcheck" onClick="make_questlist()"></td>
+								<td><input type="checkbox" class="form-check-input" id="questcheck" onClick="make_questlist()"></td>
+								</tr>
+								<tr><td>百竜夜行</td>
+								<td><input type="checkbox" class="form-check-input" id="questcheck" onClick="make_questlist()"></td>
+								<td><input type="checkbox" class="form-check-input" id="questcheck" onClick="make_questlist()"></td>
+								<td><input type="checkbox" class="form-check-input" id="questcheck" onClick="make_questlist()"></td>
+								<td><input type="hidden"   id="questcheck" disabled >－</td>
+								<td><input type="hidden"   id="questcheck" disabled >－</td>
+								</tr>
+								<tr><td>イベント</td>
+								<td><input type="hidden"   id="questcheck" disabled >－</td>
+								<td><input type="checkbox" class="form-check-input" id="questcheck" onClick="make_questlist()"></td>
+								<td><input type="checkbox" class="form-check-input" id="questcheck" onClick="make_questlist()"></td>
+								<td><input type="checkbox" class="form-check-input" id="questcheck" onClick="make_questlist()"></td>
+								<td><input type="hidden"   id="questcheck" disabled >－</td>
+								</tr>
+								<tr><td>闘技大会</td>
+								<td><input type="hidden"   id="questcheck" disabled >－</td>
+								<td><input type="checkbox" class="form-check-input" id="questcheck" onClick="make_questlist()"></td>
+								<td><input type="checkbox" class="form-check-input" id="questcheck" onClick="make_questlist()"></td>
+								<td><input type="checkbox" class="form-check-input" id="questcheck" onClick="make_questlist()"></td>
+								<td><input type="hidden"   id="questcheck" disabled >－</td>
+								</tr>
+								</tbody>
+							</table>
+							※参加条件 HR8/MR10以上を含む
+						</div>
+					</div>
+				</div>
+				<div class="accordion-item">
+					<div class="accordion-header" id="monster">
+						<button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#monster_body" aria-expanded="true" aria-controls="monster_body">
+						【モンスター指定】 >>
+						</button>
+					</div>
+					<div id="monster_body" class="accordion-collapse collapse" aria-labelledby="monster">
+						<div class="accordion-body">
+							<table class="table table-danger table-striped">
+								<thead>
+								<tr><td class="td_nowrap">種類</td><td class="td_nowrap">通常</td><td class="td_nowrap">ヌシ</td><td class="td_nowrap">古龍</td><td class="td_nowrap">特殊</td><td class="td_nowrap">ー</td></tr>
+								</thead>
+								<tbody>
+								<tr><td>RISE</td>
+								<td><input type="checkbox" class="form-check-input" id="questcheck" onClick="make_questlist()"></td>
+								<td><input type="checkbox" class="form-check-input" id="questcheck" onClick="make_questlist()"></td>
+								<td><input type="checkbox" class="form-check-input" id="questcheck" onClick="make_questlist()"></td>
+								<td><input type="checkbox" class="form-check-input" id="questcheck" onClick="make_questlist()"></td>
+								<td><input type="hidden"   id="questcheck" disabled >－</td>
+								</tr>
+								<tr><td>SB</td>
+								<td><input type="checkbox" class="form-check-input" id="questcheck" onClick="make_questlist()"></td>
+								<td><input type="hidden"   id="questcheck" disabled >－</td>
+								<td><input type="checkbox" class="form-check-input" id="questcheck" onClick="make_questlist()"></td>
+								<td><input type="checkbox" class="form-check-input" id="questcheck" onClick="make_questlist()"></td>
+								<td><input type="hidden"   id="questcheck" disabled >－</td>
+								</tr>
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+				<div class="accordion-item">
+					<div class="accordion-header" id="KaiiTokyu">
+						<button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#KaiiTokyu_body" aria-expanded="true" aria-controls="KaiiTokyu_body">
+						【傀異討究リスト】 >>
+						</button>
+					</div>
+					<div id="KaiiTokyu_body" class="accordion-collapse collapse" aria-labelledby="KaiiTokyu">
+						<div class="accordion-body">
+							<div class="form-group colorful-border">
+								<textarea class="form-control" id="KaiiTokyuList" rows="10" onChange="TrimTokyuList();make_questlist()"></textarea>
+							</div>
+						</div>
+					</div>
+				</div>
+				【対象クエスト一覧】 <label id="QueNum">0/0</label>
+				<div class="row">
+					<div class="col-3">
+						<select id="siteirank" class="form-select form-select-sm" onChange="quest_set();"></select>
+					</div>
+					<div class="col-9">
+						<select id="siteiquest" class="form-select form-select-sm" onChange="syousai_dsp()" style="width:100%;"></select>
+					</div>
+				</div>
+				※【メンバー】と設定内容を保存/読込/初期化<BR>
+				<div class="btn-group">
+					<input class="btn btn-outline-dark btn-sm" type="button" value="保存" onClick="setCookie()">
+					<input class="btn btn-outline-dark btn-sm" type="button" value="読込" onClick="getCookie(0)">
+					<input class="btn btn-outline-dark btn-sm" type="button" value="初期化" onClick="getCookie(1)">
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-4">
+			<div class="form-group colorful-border">
+				<label for="member" class="td_nowrap">【メンバー】(最大10名)</label>
+				<textarea class="form-control" id="member" rows="4" onChange="make_memberlist()"></textarea>
+			</div>
+		</div>
+		<div class="col-2">
+		</div>
+		<div class="col-6">
+			<div align="right">
+				<button type="button" class="btn btn-dark btn-sm" onClick="result_twitter1()"><i class="fab fa-x-twitter"></i></button> 
+				<button type="button" class="btn btn-success btn-sm" onClick="result_line1()"><i class="fab fa-line"></i></button> 
+			</div>
+			<div align="right">
+				<a href="./howto.html">>> 使い方</a>
+			</div>
+			<div align="center">
+				<BR>
+				<input type="button" class="btn btn-outline-light btn-sm" value="ルーレット開始！" onClick="questrand()">
+			</div>
+		</div>
+	</div>
+	<BR>
+	<div class="row">
+		<div class="col-2"  align="right">
+			履歴
+		</div>
+		<div class="col-7">
+			<select id="questhistory" class="form-select form-select-sm" aria-label="" onChange="history_dsp()" style="width:100%;">
+				<!--option selected>---</option-->
+			</select>
+		</div>
+		<div class="col-3">
+			<input type="button" class="btn btn-outline-light btn-sm" value="クリア" onClick="clear_history()">
+		</div>
+	</div>
+	【クエスト詳細】<BR>
+	<textarea class="form-control" id="data" rows="4"></textarea>
+	<div class="row">
+		<div class="col-3">
+			【結果】
+		</div>
+		<div class="col-9" align="right">
+			共有：
+			<button type="button" class="btn btn-dark btn-sm" onClick="result_twitter2()"><i class="fab fa-x-twitter"></i></button> 
+			<button type="button" class="btn btn-success btn-sm" onClick="result_line2()"><i class="fab fa-line"></i></button> 
+			<input type="button" class="btn btn-outline-light btn-sm" value="コピー" onClick="result_copy()">
+		</div>
+	</div>
+	<textarea rows="8" id="result" class="form-control" ></textarea>
+
+	<BR>
+	<table class="table table-dark table-striped">
+		<thead><tr><td class="td_nowrap">更新日</td><td>内容</td></tr></thead>
+		<tbody>
+		<tr><td>2023/9/27</td>
+			<td>MRイベントクエスト「烈禍襲来：奏でるは破滅の調べ」追加。傀異討究リスト初期値を追加</td>
+		</tr>
+		<tr><td>2023/8/31</td>
+			<td>ロゴを追加。</td>
+		</tr>
+		<tr><td>2023/7/12</td>
+			<td>モンスター指定、傀異討究のクエスト詳細表記を微調整。配信者のリンクを下部のメニューに追加。</td>
+		</tr>
+		<tr><td>2023/6/8</td>
+			<td>アプデ(Ver.16 ※最終)に対応。</td>
+		</tr>
+		<tr><td>2023/3/19</td>
+			<td>VTuber「カヤノ」様(<a href="https://www.youtube.com/@ka8no" target="New">カヤノちゃんねる</a>)の<a href="https://www.youtube.com/live/Ml3mFtPyIVI?feature=share" target="New">配信</a>にて使用していただきました。</td>
+		</tr>
+		<tr><td>2023/2/4</td>
+			<td>対象の武器を選択できる機能を追加</td>
+		</tr>
+		<tr><td>2022/12/29</td>
+			<td>ルーレット指定方法を変更。クエスト/モンスター/傀異討究</td>
+		</tr>
+		<tr><td>2022/10/26</td>
+			<td>傀異討究用のリストを追加</td>
+		</tr>
+		<tr><td>2022/9/9</td>
+			<td>「使い方」ページ追加</td>
+		</tr>
+		<tr><td>2022/6/8</td>
+			<td>クエストが過去最大10件被らないようにする機能を追加</td>
+		</tr>
+		<tr><td>2022/6/4</td>
+			<td>履歴機能追加</td>
+		</tr>
+		<tr><td>2022/5/17</td>
+			<td>闘技場クエストの武器種に対応、演出と無効設定追加</td>
+		</tr>
+		</tbody>
+	</table>
+	</main>
+
+	<div id="div1"></div>
+	<script>write_navigation()</script>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+</BODY>
+</HTML>
