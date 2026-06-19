@@ -1,0 +1,135 @@
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta http-equiv="Content-Script-Type" content="text/javascript">
+	<meta http-equiv="Content-Style-Type" content="text/css">
+	<meta name="keywords" content="モンハン,モンハンライズ,サンブレイク,MHRise,MHR,モンハンルーレット,ルーレット,ランダム">
+	<meta name="description" content="モンハンのクエスト、武器をランダムで決定します。">
+
+	<script src="./js/common.js?ver=20230712" type="text/javascript"></script>
+
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+	<link href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" rel="stylesheet">
+	<link rel="stylesheet" href="./css/mainstyle.css" type="text/css">
+	<title>ルーレット使い方</title>
+</head>
+<body>
+	<center>
+	　<br>
+	－ルーレットの使い方－
+	<table>
+	<tr><td align="center" style="color:skyblue">* menu *</td></tr>
+
+	<tr><td><a href="#SETTING">・設定</a></td></tr>
+	<tr><td><a href="#ROULETTE">・ルーレット実行</a></td></tr>
+	<tr><td><a href="#SHARE">・共有</a></td></tr>
+	<tr><td><a href="#NAVI">・ナビゲーションバー</a></td></tr>
+	</table>
+	<br>
+
+	<a name="SETTING">　</a><br>
+	<table>
+	<tr><td align="center" style="color:yellow">☆設定☆</td></tr>
+	<tr><td>上部の「設定>>」をタップ/クリックすると、設定画面が展開されます。</td></tr>
+	<tr><td></td></tr>
+	<tr><td style="color:skyblue">－【縛り】</td></tr>
+	<tr><td>縛り条件を1行1個で登録できます。</td></tr>
+	<tr><td>デフォルトから縛りを削ってもOKです。</td></tr>
+	<tr><td>ルーレット結果に縛りを含めるかは後述の【条件】で設定できます。</td></tr>
+	<tr><td></td></tr>
+	<tr><td style="color:skyblue">－【条件】</td></tr>
+	<tr><td>武器をランダム：プレイヤーが使用する武器をランダムで決定します。</td></tr>
+	<tr><td>武器重複なし：武器をランダムにする際ほかのプレイヤーと被らないようにします。</td></tr>
+	<tr><td>チーム数：1～3を設定。【メンバー】についてチーム分けを行います。(複数集会所を想定)</td></tr>
+	<tr><td>　　チーム数3、メンバー10人 → 4人、3人、3人</td></tr>
+	<tr><td>チーム分けをランダム：メンバー順ではなくランダムでチーム分けをします。</td></tr>
+	<tr><td>縛りを付加：ルーレット結果に縛り条件をランダムで設定します。</td></tr>
+	<tr><td>　　縛り数の下限数～上限数で設定される縛りの数を設定可能。(個数もランダム)</td></tr>
+	<tr><td>演出無効：ルーレット実行時の演出を省き、すぐに結果を表示します。</td></tr>
+	<tr><td>クエスト過去10件被らなくする：連続で同じクエストが出ないようにします。</td></tr>
+	<tr><td>ルーレット指定：対象クエストの指定方法を選択。</td></tr>
+	<tr><td>　　クエストのみ：クエスト名でのみルーレット</td></tr>
+	<tr><td>　　モンスターのみ：モンスター名でのルーレット</td></tr>
+	<tr><td>　　クエスト＋モンスター：クエスト名とモンスター名どちらも含めてルーレット</td></tr>
+	<tr><td></td></tr>
+	<tr><td style="color:skyblue">－【対象クエスト】</td></tr>
+	<tr><td>対象とするクエストの種類にチェックをします。</td></tr>
+	<tr><td>　　高難度：クエスト名に「高難度」とつくもの</td></tr>
+	<tr><td>　　　　参加条件がHR8やMR10になっているクエストが対象です。</td></tr>
+	<tr><td>　　闘技大会：闘技大会の場合、指定武器のみで決定されます。(人数2人の場合未対応)</td></tr>
+	<tr><td></td></tr>
+	<tr><td style="color:skyblue">－【モンスター指定】</td></tr>
+	<tr><td>対象とするモンスターの種類をチェックします。</td></tr>
+	<tr><td>RISE：RISEから登場するモンスター</td></tr>
+	<tr><td>SB：サンブレイクから登場するモンスター</td></tr>
+	<tr><td></td></tr>
+	<tr><td style="color:skyblue">－【対象クエスト一覧】</td></tr>
+	<tr><td>選択したクエスト、モンスターの一覧を確認できます。</td></tr>
+	<tr><td>ルーレット対象になっているクエスト数/総クエスト数を表示しています。</td></tr>
+	<tr><td></td></tr>
+	<tr><td style="color:skyblue">－保存、読込、初期化</td></tr>
+	<tr><td>ルーレットを実行するとクッキーに設定内容が保存されます。</td></tr>
+	<tr><td>　保存：設定の内容をクッキーに保存</td></tr>
+	<tr><td>　読込：設定をクッキーから読み込み</td></tr>
+	<tr><td>　初期化：初期設定に戻します。</td></tr>
+	<tr><td></td></tr>
+	<tr><td style="color:skyblue">－【メンバー】(最大10名)</td></tr>
+	<tr><td>参加メンバーを1行1名で登録します。</td></tr>
+	<tr><td>5名以上でやる場合チーム数を増やして集会所を分けてみましょう。</td></tr>
+	<tr><td></td></tr>
+	</table>
+
+	<a name="ROULETTE">　</a><br>
+	<table>
+	<tr><td align="center" style="color:yellow">☆ルーレット実行☆</td></tr>
+	<tr><td style="color:skyblue">－ルーレット開始！ボタン</td></tr>
+	<tr><td>設定内容を基にクエスト、武器、縛り条件をランダムで決定します。</td></tr>
+	<tr><td></td></tr>
+	<tr><td style="color:skyblue">－履歴</td></tr>
+	<tr><td>ルーレットするたびに履歴に入ります。(最大20)</td></tr>
+	<tr><td>履歴のクエスト名を選択するとその結果を再表示します。</td></tr>
+	<tr><td>クリアボタン：履歴内容を消去します。</td></tr>
+	<tr><td></td></tr>
+	<tr><td style="color:skyblue">－【クエスト詳細】</td></tr>
+	<tr><td>選ばれたクエストの詳細を表示。クエスト名、ターゲット、目的地</td></tr>
+	<tr><td></td></tr>
+	<tr><td style="color:skyblue">－【結果】</td></tr>
+	<tr><td>ルーレット結果を表示。クエスト、使用武器、縛り条件</td></tr>
+	<tr><td></td></tr>
+	</table>
+
+
+	<a name="SHARE">　</a><br>
+	<table>
+	<tr><td align="center" style="color:yellow">☆共有☆</td></tr>
+	<tr><td>結果をTwitter、LINEに共有、またはクリップボードにコピーできます。</td></tr>
+	<tr><td>是非共有してね！！</td></tr>
+	<tr><td></td></tr>
+	</table>
+
+
+	<a name="NAVI">　</a><br>
+	<table>
+	<tr><td align="center" style="color:yellow">☆ナビゲーションバー☆</td></tr>
+	<tr><td>下部の黒いバー右端の「三」を押すと、リンクなどが表示されます。</td></tr>
+	<tr><td>タイトル：トップページにリンクします。</td></tr>
+	<tr><td>ルーレット：ルーレットのページにリンクします。</td></tr>
+	<tr><td>Link：狩猟生活に役立つリンクをまとめています。(公式、Wikiなど)</td></tr>
+	<tr><td>作者名：作者のTwitterにリンクします。ご意見、ご要望、ご感想など連絡ください。</td></tr>
+	<tr><td></td></tr>
+	</table>
+
+	</center>
+
+	<div align="right">
+	－2022.09.09 作成<br>
+	－2022.09.22 更新
+	</div>
+
+	<div id="div1"></div>
+	<script>write_navigation()</script>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+
+</body>
+</html>
