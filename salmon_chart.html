@@ -60,20 +60,29 @@
 				</section>
 				<br>
 
-				<!--div class="button-stack"-->
 				<div class="row">
-					<div class="col-4">
+					<div class="col-6">
 						<button id="saveHistoryBtn" class="btn btn-ghost">保存</button>
-					</div>
-					<div class="col-4">
 						<button id="clearHistoryBtn" class="btn btn-ghost">履歴削除</button>
-					</div>
-					<div class="col-4">
 						<button id="resetBtn" class="btn btn-ghost">入力値0</button>
 					</div>
+					<div class="col-6">
+					</div>
 				</div>
-				<!--/div-->
-
+				<div class="row">
+					<div class="col-3" align="right">
+						履歴（最大10件）
+					</div>
+					<div class="col-3">
+						<!-- コンボボックス -->
+						<select id="historySelect" class="form-select form-select-sm"></select>
+					</div>
+					<div class="col-6">
+						<!-- 読み込みボタン -->
+						<button id="loadHistoryBtn" class="btn btn-ghost">読み込み</button>
+					</div>
+				</div>
+		
 			</div>
 		</div>
 	</div>
@@ -88,12 +97,6 @@
 		</div>
 	</div -->
 	
-	<section class="panel output-panel">
-		<div class="canvas-card">
-			<canvas id="mainChart" width="1200" height="1580"></canvas>
-		</div>
-	</section>
-
 	<div align="right">
 		<button id="saveImageBtn" class="btn btn-outline-light btn-sm">画像保存</button>
 		結果を投稿：
@@ -102,9 +105,15 @@
 		<input type="button" class="btn btn-outline-light btn-sm" value="コピー" onClick="result_copy()">
 	</div>
 
+	<section class="panel output-panel">
+		<div class="canvas-card">
+			<canvas id="mainChart" width="1200" height="1580"></canvas>
+		</div>
+	</section>
+	
 	<section class="panel history-panel">
 		<div class="history-header">
-			<h2>履歴（最大10件・日付順）</h2>
+			<h2>最新/選択履歴</h2>
 			<label class="history-filter">
 				<span>折れ線グラフ対象</span>
 				<select id="historyMetricSelect"></select>

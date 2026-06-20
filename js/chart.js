@@ -1,5 +1,3 @@
-
-
 const ALL_METRICS = [...BOSS_METRICS, ...EXTRA_METRICS];
 const STORAGE_CURRENT = "salmonrun.current.v4";
 const STORAGE_HISTORY = "salmonrun.history.v4";
@@ -19,10 +17,13 @@ const mainCanvas = document.getElementById("mainChart");
 const historyCanvas = document.getElementById("historyChart");
 const mainCtx = mainCanvas.getContext("2d");
 const historyCtx = historyCanvas.getContext("2d");
+const historySelect = document.getElementById("historySelect");
+const loadHistoryBtn = document.getElementById("loadHistoryBtn");
 
 function css(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
 const CATEGORY_COLOR = { near: css("--near"), mid: css("--mid"), far: css("--far"), extra: css("--extra") };
 
+// 日付を取得
 function todayISO(date = new Date()){
 	const y = date.getFullYear();
 	const m = String(date.getMonth() + 1).padStart(2, "0");
@@ -41,6 +42,47 @@ if (!currentState.date) currentState.date = todayISO();
 function saveCurrent(){ localStorage.setItem(STORAGE_CURRENT, JSON.stringify(currentState)); }
 function saveHistory(){ localStorage.setItem(STORAGE_HISTORY, JSON.stringify(historyState.slice(-HISTORY_LIMIT))); }
 function metricByKey(key){ return ALL_METRICS.find(m => m.key === key); }
+
+// 最新の履歴を取得
+function getLatestHistoryEntry(){
+	if (!historyState.length) return null;
+
+	return historyState.reduce((a, b) =>
+		a.date > b.date ? a : b
+	);
+}
+
+// 最新の履歴を入力欄に反映
+function initCurrentFromLatestHistoryWithTodayDate(){
+	const today = todayISO();
+
+	// 今日データ優先
+	const todayEntry = historyState.find(e => e.date === today);
+
+	if (todayEntry){
+		currentState.values = { ...defaults(), ...todayEntry.values };
+	} else {
+		// なければ最新履歴をセット
+		const latest = getLatestHistoryEntry();
+		currentState.values = latest
+			? { ...defaults(), ...latest.values }
+			: defaults();
+	}
+
+	// 日付は「今日」
+	currentState.date = today;
+
+	saveCurrent();
+
+	// 日付フィールド反映
+	recordDateEl.value = currentState.date;
+
+	// 入力欄へ反映
+	document.querySelectorAll(".metric-input").forEach(input => {
+		const key = input.dataset.key;
+		input.value = currentState.values[key] ?? 0;
+	});
+}
 
 function sortAndRecalculateHistory(entries){
 	const sorted = [...entries].sort((a, b) => {
@@ -89,14 +131,6 @@ function wireInputs(){
 	});
 }
 
-function initDateInput(){
-	recordDateEl.value = currentState.date || todayISO();
-	recordDateEl.addEventListener("input", () => {
-		currentState.date = recordDateEl.value || todayISO();
-		saveCurrent();
-	});
-}
-
 function initMetricSelect(){
 	historyMetricSelectEl.innerHTML = ALL_METRICS.map(m => `<option value="${m.key}">${m.name}</option>`).join("");
 	historyMetricSelectEl.value = "goldenEggs";
@@ -123,29 +157,50 @@ function currentDeltaMap(){
 }
 
 function saveSnapshot(){
+	const date = recordDateEl.value || todayISO();
+
+	// 同日チェック
+	const existingIndex = historyState.findIndex(e => e.date === date);
+
+	// 保存データ
 	const entry = {
-		id: `${Date.now()}-${Math.random().toString(36).slice(2,8)}`,
-		createdAt: new Date().toISOString(),
-		date: recordDateEl.value || todayISO(),
+		date,
 		values: { ...defaults(), ...currentState.values },
+		createdAt: new Date().toISOString(),
 		deltas: {}
 	};
-	historyState.push(entry);
-	historyState = sortAndRecalculateHistory(historyState).slice(-HISTORY_LIMIT);
+
+	if (existingIndex !== -1) {
+		// 上書き
+		historyState[existingIndex] = entry;
+	} else {
+		// 新規追加
+		historyState.push(entry);
+	}
+
+	// ソート＋差分再計算＋10件制限
+	historyState = sortAndRecalculateHistory(historyState)
+		.slice(-HISTORY_LIMIT);
+
 	saveHistory();
 	renderAll();
+	updateHistorySelect();
 	renderHistoryList();
 	renderHistoryChart();
-	editShaareText();
+	editShareText();
 }
 
+// 入力欄を初期化(0にする)
 function resetInputs(){
 	currentState = { date: todayISO(), values: defaults() };
 	saveCurrent();
-	initDateInput();
-	buildGrid(bossInputsEl, BOSS_METRICS);
-	buildGrid(extraInputsEl, EXTRA_METRICS);
-	wireInputs();
+
+	// UIに反映
+	recordDateEl.value = currentState.date;
+
+	document.querySelectorAll(".metric-input").forEach(input => {
+		input.value = 0;
+	 });
 	renderAll();
 }
 
@@ -183,25 +238,92 @@ function renderExtraSummary(deltas){
 	}).join("");
 }
 
+// 履歴一件分の詳細を表示
 function renderHistoryList(){
 	if (!historyState.length) {
 		historyListEl.innerHTML = '<p class="empty-text">履歴はまだありません。</p>';
 		return;
 	}
-	historyListEl.innerHTML = historyState.map(entry => {
-		const rows = ALL_METRICS.map(metric => {
-			const value = entry.values?.[metric.key] ?? 0;
-			const delta = entry.deltas?.[metric.key] ?? 0;
-			const cls = delta > 0 ? 'plus' : delta === 0 ? 'zero' : 'minus';
-			return `<div class="history-grid-row"><span>${metric.name}</span><span class="num">${value}</span><span class="num delta ${cls}">${delta > 0 ? `+${delta}` : `${delta}`}</span></div>`;
-		}).join("");
-		return `
-			<section class="history-entry">
-				<h3>${entry.date}</h3>
-				<div class="history-grid-head"><span>項目</span><span class="num">値</span><span class="num">差分</span></div>
-				${rows}
-			</section>`;
+	let targetEntry = null;
+
+	// 選択している履歴があれば読込
+  	const idx = Number(historySelect.value);
+  	if (!Number.isNaN(idx) && historyState[idx]) {
+		targetEntry = historyState[idx];
+	}
+
+	// 選択していなければ最新の履歴を読込
+	if (!targetEntry && historyState.length){
+		targetEntry = historyState[historyState.length - 1];
+	}
+
+	const rows = ALL_METRICS.map(metric => {
+		const value = targetEntry.values?.[metric.key] ?? 0;
+		const delta = targetEntry.deltas?.[metric.key] ?? 0;
+		const cls = delta > 0 ? 'plus' : delta === 0 ? 'zero' : 'minus';
+		return `<div class="history-grid-row"><span>${metric.name}</span><span class="num">${value}</span><span class="num delta ${cls}">${delta > 0 ? `+${delta}` : `${delta}`}</span></div>`;
 	}).join("");
+
+	historyListEl.innerHTML = `
+		<section class="history-entry">
+			<h3>${targetEntry.date}</h3>
+			<div class="history-grid-head"><span>項目</span><span class="num">値</span><span class="num">差分</span></div>
+			${rows}
+		</section>`;
+}
+
+// 履歴コンボボックスを設定
+function updateHistorySelect(){
+	if (!historyState.length){
+		historySelect.innerHTML = '<option>履歴なし</option>';
+		return;
+	}
+
+	// 履歴リストを降順に並び変える
+	const reversed = historyState
+		.map((r,i) => ({ r, i }))
+		.reverse();
+
+	// 降順リストをコンボボックスにセット
+	historySelect.innerHTML = reversed
+		.map(({ r, i }) => `<option value="${i}">${r.date}</option>`)
+		.join("");
+
+	// 最新 or 登録した履歴を選択
+	const today = currentState.date;
+	const todayIndex = historyState.findIndex(e => e.date === today);
+
+	if (todayIndex !== -1){
+		historySelect.value = String(todayIndex);
+	} else {
+		historySelect.value = String(historyState.length - 1);
+	}
+}
+
+function loadSelectedHistoryIntoForm(){
+	const idx = Number(historySelect.value);
+	const entry = historyState[idx];
+
+	if (!entry) return;
+
+	// 値をコピー
+	currentState.values = { ...entry.values };
+
+	// 日付も切り替える
+	currentState.date = entry.date;
+
+	saveCurrent();
+
+	// 入力欄へ反映
+	document.querySelectorAll(".metric-input").forEach(input => {
+		const key = input.dataset.key;
+		input.value = currentState.values[key] ?? 0;
+	});
+
+	// 日付欄反映
+	document.getElementById("recordDate").value = entry.date;
+
+	renderAll();
 }
 
 function renderHistoryChart(){
@@ -411,7 +533,7 @@ function saveImage(){ const a=document.createElement("a"); a.download=`salmonrun
 
 
 // 投稿用テキストを編集
-function editShaareText(){
+function editShareText(){
 	share_txt = "";
 
 	const bossData = orderedBossData(); 
@@ -426,15 +548,18 @@ function editShaareText(){
 
 	add_result_txt(text);
 }
-function clearHistory(){ historyState=[]; saveHistory(); renderHistoryList(); renderHistoryChart(); renderAll(); }
+
+function clearHistory(){ historyState=[]; saveHistory(); 
+	renderHistoryList(); renderHistoryChart(); renderAll(); }
 
 // init
-initDateInput();
 buildGrid(bossInputsEl, BOSS_METRICS);
 buildGrid(extraInputsEl, EXTRA_METRICS);
 wireInputs();
 initMetricSelect();
+updateHistorySelect();
 renderHistoryList();
+initCurrentFromLatestHistoryWithTodayDate();
 renderAll();
 renderHistoryChart();
 
@@ -442,3 +567,5 @@ document.getElementById("saveImageBtn").addEventListener("click", saveImage);
 document.getElementById("saveHistoryBtn").addEventListener("click", () => { saveSnapshot(); alert("今回の内容を日付順で履歴保存し、差分を再計算しました。"); });
 document.getElementById("clearHistoryBtn").addEventListener("click", () => { clearHistory(); alert("履歴を削除しました。"); });
 document.getElementById("resetBtn").addEventListener("click", resetInputs);
+loadHistoryBtn.addEventListener("click", loadSelectedHistoryIntoForm);
+historySelect.addEventListener("change", () => {renderHistoryList();});
