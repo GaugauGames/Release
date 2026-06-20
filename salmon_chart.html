@@ -61,33 +61,30 @@
 				<br>
 
 				<div class="row">
-					<div class="col-8">
+					<div class="col-3">
 						<button id="saveHistoryBtn" class="btn btn-ghost">保存</button>
 					</div>
-					<div class="col-4" align="right">
+					<div class="col-9" align="right">
 						<button id="resetBtn" class="btn btn-ghost">入力値0</button>
-					</div>
-				</div>
-				<div class="row">
-					<div class="col-3" align="right">
-						履歴（最大10件）
-					</div>
-					<div class="col-3">
-						<select id="historySelect" class="form-select form-select-sm"></select>
-					</div>
-					<div class="col-3">
-						<button id="loadHistoryBtn" class="btn btn-ghost">履歴読込</button>
-					</div>
-					<div class="col-3" align="right">
 						<button id="clearHistoryBtn" class="btn btn-ghost">履歴削除</button>
 					</div>
 				</div>
+				<br>
 				<div class="row">
-					<div class="col-11">
-						<button id="exportCsvBtn" class="btn btn-ghost">CSV出力</button>
-						CSV取込<input type="file" id="csvImportInput" accept=".csv,text/csv" class="btn btn-ghost">
+					<div class="col-8">
+						履歴(最大10件)<br>
+						<select id="historySelect" class="form-select form-select-sm"></select>
 					</div>
-					<div class="col-1">
+					<div class="col-4">
+						<button id="loadHistoryBtn" class="btn btn-ghost">履歴読込</button>
+					</div>
+				</div>
+				<br>
+				<div class="row">
+					<div class="col-12">
+						<button id="exportCsvBtn" class="btn btn-ghost">CSV出力</button>
+						<br>CSV取込
+						<input type="file" id="csvImportInput" accept=".csv,text/csv" class="btn btn-ghost">
 					</div>
 				</div>
 			</div>
