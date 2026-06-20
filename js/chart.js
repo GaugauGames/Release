@@ -135,7 +135,7 @@ function wireInputs(){
 
 function initMetricSelect(){
 	historyMetricSelectEl.innerHTML = ALL_METRICS.map(m => `<option value="${m.key}">${m.name}</option>`).join("");
-	historyMetricSelectEl.index = 0;
+	historyMetricSelectEl.selectIndex = 0;
 	historyMetricSelectEl.addEventListener("change", renderHistoryChart);
 }
 
@@ -432,7 +432,7 @@ function renderMainChart(data, stats, entry){
 	drawLegend();
 	drawTop3Card(50, 1120, 440, 220, stats.top3);
 	drawCategoryCard(500, 1120, 690, 220, stats);
-	drawDeltaTable(50, 1350, 1135, 200, entry.deltas);
+	drawDeltaTable(50, 1350, 1135, 200, entry);
 }
 
 function drawLegend(){
@@ -472,13 +472,13 @@ function drawCategoryCard(x, y, w, h, stats){
 	drawText(mainCtx, `遠距離 ${stats.byCategory.far}`, x + 500, y + 124, 22, css("--far"), 900);
 }
 
-function drawDeltaTable(x, y, w, h, deltas){
+function drawDeltaTable(x, y, w, h, entry){
 	fillRound(mainCtx, x, y, w, h, 18, "#fffdfa"); strokeRound(mainCtx, x, y, w, h, 18, "#efc9b4");
 	drawText(mainCtx, "オカシラ、金イクラ", x + 18, y + 34, 24, "#2d160d", 900);
 	EXTRA_METRICS.forEach((m, i) => {
-		yy = y + 84 + i * 44; 
-		const v = currentState.values?.[m.key] ?? 0; 
-		const d = deltas[m.key] ?? 0;
+		let yy = y + 84 + i * 44; 
+		const v = entry.values?.[m.key] ?? 0; 
+		const d = entry.deltas?.[m.key] ?? 0;
 		if(i > 2){
 			x = 600;
 			yy = yy - 3 * 44;
@@ -520,7 +520,7 @@ function editShareText(){
 	const eggs = entry.values["goldenEggs"] ?? 0;
 
 	const textPrefix=("オオモノ討伐数を更新！").trim();
-	const text = `${textPrefix}\n${entry.date.value || todayISO()}\nTOP3\n${top3}\n\n金イクラ ${eggs}\n`;
+	const text = `${textPrefix}\n${entry.date || todayISO()}\nTOP3\n${top3}\n\n金イクラ ${eggs}\n`;
 
 	add_result_txt(text);
 }
