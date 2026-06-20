@@ -41,11 +41,11 @@ button,input,select{font:inherit}
 .date-field span,.share-box span,.history-filter span{font-size:12px;font-weight:700;color:var(--muted)}
 .date-field input,.share-box input,.history-filter select{width:100%;border:1px solid var(--border);border-radius:12px;background:#fff;padding:11px 12px;color:var(--text)}
 .metric-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
-.metric-cell{background:var(--surface-2);border:1px solid var(--border);border-radius:16px;padding:10px;display:grid;gap:6px;min-width:0}
-.metric-cell.near{box-shadow:inset 0 0 0 1px rgba(249,115,22,.08)}
-.metric-cell.mid{box-shadow:inset 0 0 0 1px rgba(245,158,11,.08)}
-.metric-cell.far{box-shadow:inset 0 0 0 1px rgba(239,68,68,.08)}
-.metric-cell.extra{box-shadow:inset 0 0 0 1px rgba(139,92,246,.10)}
+.metric-cell{color:white;:var(--surface-2);border:1px solid var(--border);border-radius:16px;padding:10px;display:grid;gap:6px;min-width:0}
+.metric-cell.near{box-shadow:inset 0 0 0 1px rgba(249,115,22,.08);background:var(--near)}
+.metric-cell.mid{box-shadow:inset 0 0 0 1px rgba(245,158,11,.08);background:var(--mid)}
+.metric-cell.far{box-shadow:inset 0 0 0 1px rgba(239,68,68,.08);background:var(--far)}
+.metric-cell.extra{box-shadow:inset 0 0 0 1px rgba(139,92,246,.10);background:var(--extra)}
 .metric-title{font-size:13px;font-weight:800;line-height:1.25;min-height:32px;display:flex;align-items:center;justify-content:center;text-align:center}
 .metric-input{width:100%;text-align:center;border-radius:12px;border:1px solid var(--border);background:#fff;padding:10px 8px;font-weight:700}
 .legend{display:flex;flex-wrap:wrap;gap:10px 14px;color:var(--muted);font-size:12px;font-weight:700}

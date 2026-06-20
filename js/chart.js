@@ -19,6 +19,8 @@ const mainCtx = mainCanvas.getContext("2d");
 const historyCtx = historyCanvas.getContext("2d");
 const historySelect = document.getElementById("historySelect");
 const loadHistoryBtn = document.getElementById("loadHistoryBtn");
+const exportCsvBtn = document.getElementById("exportCsvBtn");
+const csvImportInput = document.getElementById("csvImportInput");
 
 function css(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
 const CATEGORY_COLOR = { near: css("--near"), mid: css("--mid"), far: css("--far"), extra: css("--extra") };
@@ -95,8 +97,8 @@ function sortAndRecalculateHistory(entries){
 	sorted.forEach(entry => {
 		entry.deltas = entry.deltas || {};
 		ALL_METRICS.forEach(metric => {
-			const before = prev?.values?.[metric.key] ?? 0;
 			const now = entry.values?.[metric.key] ?? 0;
+			const before = prev?.values?.[metric.key] ?? now;
 			entry.deltas[metric.key] = now - before;
 		});
 		prev = entry;
@@ -133,27 +135,8 @@ function wireInputs(){
 
 function initMetricSelect(){
 	historyMetricSelectEl.innerHTML = ALL_METRICS.map(m => `<option value="${m.key}">${m.name}</option>`).join("");
-	historyMetricSelectEl.value = "goldenEggs";
+	historyMetricSelectEl.index = 0;
 	historyMetricSelectEl.addEventListener("change", renderHistoryChart);
-}
-
-function orderedBossData(values = currentState.values){
-	return BOSS_METRICS.map(metric => ({ ...metric, value: Number(values?.[metric.key] || 0) }));
-}
-
-function bossStatsFrom(data){
-	const total = data.reduce((sum, d) => sum + d.value, 0);
-	const byCategory = { near: 0, mid: 0, far: 0 };
-	data.forEach(d => { byCategory[d.category] += d.value; });
-	const top3 = [...data].sort((a,b) => b.value - a.value || a.name.localeCompare(b.name, "ja")).slice(0, 3);
-	const maxValue = Math.max(10, ...data.map(d => d.value));
-	return { total, byCategory, top3, maxValue };
-}
-
-function currentDeltaMap(){
-	if (!historyState.length) return Object.fromEntries(ALL_METRICS.map(m => [m.key, currentState.values?.[m.key] ?? 0]));
-	const last = historyState[historyState.length - 1];
-	return Object.fromEntries(ALL_METRICS.map(m => [m.key, (currentState.values?.[m.key] ?? 0) - (last.values?.[m.key] ?? 0)]));
 }
 
 function saveSnapshot(){
@@ -183,8 +166,8 @@ function saveSnapshot(){
 		.slice(-HISTORY_LIMIT);
 
 	saveHistory();
-	renderAll();
 	updateHistorySelect();
+	renderAll();
 	renderHistoryList();
 	renderHistoryChart();
 	editShareText();
@@ -197,45 +180,12 @@ function resetInputs(){
 
 	// UIに反映
 	recordDateEl.value = currentState.date;
+	share_txt = "";
 
 	document.querySelectorAll(".metric-input").forEach(input => {
 		input.value = 0;
 	 });
 	renderAll();
-}
-
-function renderRanking(top3){
-	rankingEl.innerHTML = top3.map((item, i) => `
-		<div class="rank-item">
-			<div class="rank-badge">${i + 1}</div>
-			<div>
-				<div class="rank-name">${item.name}</div>
-				<div class="rank-sub">${CATEGORY_LABEL[item.category]}</div>
-			</div>
-			<div class="rank-score">${item.value}</div>
-		</div>
-	`).join("");
-}
-
-function renderSummary(stats, deltas){
-	const pct = (v) => stats.total ? ((v / stats.total) * 100).toFixed(1) : "0.0";
-	const totalDelta = BOSS_METRICS.reduce((sum, m) => sum + (deltas[m.key] || 0), 0);
-	summaryEl.innerHTML = `
-		<div class="summary-row"><span class="summary-label">オオモノ合計</span><span class="summary-value">${stats.total}</span></div>
-		<div class="summary-row"><span class="summary-label">オオモノ差分合計</span><span class="summary-value">${totalDelta > 0 ? "+" : ""}${totalDelta}</span></div>
-		<div class="summary-row"><span class="summary-label">近距離割合</span><span class="summary-value">${pct(stats.byCategory.near)}%</span></div>
-		<div class="summary-row"><span class="summary-label">中距離割合</span><span class="summary-value">${pct(stats.byCategory.mid)}%</span></div>
-		<div class="summary-row"><span class="summary-label">遠距離割合</span><span class="summary-value">${pct(stats.byCategory.far)}%</span></div>
-		<div class="summary-row"><span class="summary-label">履歴件数</span><span class="summary-value">${historyState.length} / ${HISTORY_LIMIT}</span></div>
-	`;
-}
-
-function renderExtraSummary(deltas){
-	extraSummaryEl.innerHTML = EXTRA_METRICS.map(m => {
-		const value = currentState.values?.[m.key] ?? 0;
-		const delta = deltas[m.key] ?? 0;
-		return `<div class="summary-row"><span class="summary-label">${m.name}</span><span class="summary-value">${value} <small>(${delta > 0 ? "+" : ""}${delta})</small></span></div>`;
-	}).join("");
 }
 
 // 履歴一件分の詳細を表示
@@ -246,16 +196,8 @@ function renderHistoryList(){
 	}
 	let targetEntry = null;
 
-	// 選択している履歴があれば読込
-  	const idx = Number(historySelect.value);
-  	if (!Number.isNaN(idx) && historyState[idx]) {
-		targetEntry = historyState[idx];
-	}
-
-	// 選択していなければ最新の履歴を読込
-	if (!targetEntry && historyState.length){
-		targetEntry = historyState[historyState.length - 1];
-	}
+	// 選択している履歴があれば読込、なければ最新の履歴を読込
+	targetEntry = getChartSourceEntry();
 
 	const rows = ALL_METRICS.map(metric => {
 		const value = targetEntry.values?.[metric.key] ?? 0;
@@ -330,11 +272,11 @@ function renderHistoryChart(){
 	historyCtx.clearRect(0, 0, historyCanvas.width, historyCanvas.height);
 	fillRound(historyCtx, 0, 0, historyCanvas.width, historyCanvas.height, 22, "#ffffff");
 	const metric = metricByKey(historyMetricSelectEl.value || "goldenEggs") || ALL_METRICS[0];
-	const points = historyState.map(entry => ({ date: entry.date, value: entry.values?.[metric.key] ?? 0 }));
+	const points = historyState.map(entry => ({ date: entry.date, value: entry.deltas?.[metric.key] ?? 0 }));
 
-	drawText(historyCtx, `${metric.name} の推移`, 24, 36, 20, "#2d160d", 900);
+	drawText(historyCtx, `${metric.name} (差分)の推移`, 24, 36, 20, "#2d160d", 900);
 	if (!points.length) {
-		drawText(historyCtx, "履歴がまだありません。", 24, 72, 14, "#7a4a36", 700);
+		drawText(historyCtx, "履歴はまだありません。", 24, 72, 14, "#7a4a36", 700);
 		return;
 	}
 	const pad = { top: 50, right: 28, bottom: 54, left: 44 };
@@ -386,21 +328,57 @@ function renderHistoryChart(){
 }
 
 function renderAll(){
-	const bossData = orderedBossData();
+	const entry = getChartSourceEntry();
+	const bossData = orderedBossData(entry);
 	const stats = bossStatsFrom(bossData);
-	const deltas = currentDeltaMap();
-	//renderRanking(stats.top3);
-	//renderSummary(stats, deltas);
-	//renderExtraSummary(deltas);
-	renderMainChart(bossData, stats, deltas);
+	renderMainChart(bossData, stats, entry);
 }
 
-function renderMainChart(data, stats, deltas){
+// チャート表示用のデータを取得
+function getChartSourceEntry(){
+	// 選択優先
+	const idx = Number(historySelect.value);
+	if (!Number.isNaN(idx) && historyState[idx]) {
+		return historyState[idx];
+	}
+
+	// なければ最新
+	if (historyState.length){
+		return historyState[historyState.length - 1];
+	}
+
+	return null;
+}
+
+function orderedBossData(entry){
+	if (!entry) return null;
+
+	const values = entry.values;
+	return BOSS_METRICS.map(metric => ({ ...metric, value: Number(values?.[metric.key] || 0) }));
+}
+
+function bossStatsFrom(data){
+	if (!data) return null;
+
+	const total = data.reduce((sum, d) => sum + d.value, 0);
+	const byCategory = { near: 0, mid: 0, far: 0 };
+	data.forEach(d => { byCategory[d.category] += d.value; });
+	const top3 = [...data].sort((a,b) => b.value - a.value || a.name.localeCompare(b.name, "ja")).slice(0, 3);
+	const maxValue = Math.max(10, ...data.map(d => d.value));
+	return { total, byCategory, top3, maxValue };
+}
+
+function renderMainChart(data, stats, entry){
 	mainCtx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
+
 	fillRound(mainCtx, 0, 0, mainCanvas.width, mainCanvas.height, 28, "#ffffff");
 	drawText(mainCtx, "サーモンラン オオモノ討伐グラフ", 38, 58, 30, "#2d160d", 900);
-	drawText(mainCtx, `${recordDateEl.value || todayISO()} の記録`, 38, 90, 20, "#7a4a36", 700);
+	if (!entry){
+		drawText(mainCtx, "履歴はまだありません。", 45, 90, 20, "#7a4a36", 700);
+		return;
+	}
 
+	drawText(mainCtx, `${entry.date} の記録`, 38, 90, 20, "#7a4a36", 700);
 	const centerX = 600, centerY = 600, radius = 450, levels = 5, N = data.length;
 	for (let lv = 1; lv <= levels; lv++) {
 		const r = radius * (lv / levels);
@@ -453,8 +431,8 @@ function renderMainChart(data, stats, deltas){
 
 	drawLegend();
 	drawTop3Card(50, 1120, 440, 220, stats.top3);
-	drawCategoryCard(500, 1120, 690, 190, stats);
-	drawDeltaTable(50, 1350, 900, 200, deltas);
+	drawCategoryCard(500, 1120, 690, 220, stats);
+	drawDeltaTable(50, 1350, 1135, 200, entry.deltas);
 }
 
 function drawLegend(){
@@ -502,12 +480,12 @@ function drawDeltaTable(x, y, w, h, deltas){
 		const v = currentState.values?.[m.key] ?? 0; 
 		const d = deltas[m.key] ?? 0;
 		if(i > 2){
-			x = 500;
+			x = 600;
 			yy = yy - 3 * 44;
 		}
 		drawText(mainCtx, m.name, x + 20, yy, 20, "#2d160d", 800);
 		drawText(mainCtx, `今回　${v}`, x + 180, yy, 15, "#7a4a36", 700);
-		drawText(mainCtx, d > 0 ? `+${d}` : `${d}`, x + 350, yy, 18, d > 0 ? css("--plus") : css("--zero"), 900, "right");
+		drawText(mainCtx, d > 0 ? `+${d}` : `${d}`, x + 400, yy, 18, d > 0 ? css("--plus") : css("--zero"), 900, "right");
 	});
 }
 
@@ -528,29 +506,335 @@ function fillRound(ctx, x, y, w, h, r, fill){ ctx.save(); roundRectPath(ctx, x, 
 function strokeRound(ctx, x, y, w, h, r, stroke){ ctx.save(); roundRectPath(ctx, x, y, w, h, r); ctx.strokeStyle = stroke; ctx.lineWidth = 1; ctx.stroke(); ctx.restore(); }
 function fillRect(ctx, x, y, w, h, fill){ ctx.save(); ctx.fillStyle = fill; ctx.fillRect(x, y, w, h); ctx.restore(); }
 function formatFileDate(date = new Date()){ const y=date.getFullYear(), m=String(date.getMonth()+1).padStart(2,"0"), d=String(date.getDate()).padStart(2,"0"), hh=String(date.getHours()).padStart(2,"0"), mm=String(date.getMinutes()).padStart(2,"0"); return `${y}${m}${d}-${hh}${mm}`; }
-
-function saveImage(){ const a=document.createElement("a"); a.download=`salmonrun-chart-${formatFileDate()}.png`; a.href=mainCanvas.toDataURL("image/png"); a.click(); }
-
+function saveImage(){ const a=document.createElement("a"); a.download=`salmon-chart-${formatFileDate()}.png`; a.href=mainCanvas.toDataURL("image/png"); a.click(); }
 
 // 投稿用テキストを編集
 function editShareText(){
 	share_txt = "";
 
-	const bossData = orderedBossData(); 
+	const entry = getChartSourceEntry();
+	const bossData = orderedBossData(entry);
 	const stats = bossStatsFrom(bossData);
-	const deltas = currentDeltaMap();
 
 	const top3 = stats.top3.map((d,i)=>`${i+1}位 ${d.name} ${d.value}`).join("\n");
-	const eggs = currentState.values.goldenEggs ?? 0;
+	const eggs = entry.values["goldenEggs"] ?? 0;
 
 	const textPrefix=("オオモノ討伐数を更新！").trim();
-	const text = `${textPrefix}\n■日付 ${recordDateEl.value || todayISO()}\n■TOP3\n${top3}\n■金イクラ ${eggs}\n`;
+	const text = `${textPrefix}\n${entry.date.value || todayISO()}\nTOP3\n${top3}\n\n金イクラ ${eggs}\n`;
 
 	add_result_txt(text);
 }
 
-function clearHistory(){ historyState=[]; saveHistory(); 
-	renderHistoryList(); renderHistoryChart(); renderAll(); }
+function clearHistory(){
+	share_txt = "";
+	historyState=[];
+	saveHistory(); 
+	updateHistorySelect();
+	renderHistoryList();
+	renderHistoryChart();
+	renderAll();
+}
+
+// ----------------------------------------
+// 共通：CSVセルのエスケープ
+// ----------------------------------------
+function csvEscape(value) {
+	const str = String(value ?? "");
+	if (/[",\n\r]/.test(str)) {
+		return `"${str.replace(/"/g, '""')}"`;
+	}
+	return str;
+}
+
+// ----------------------------------------
+// Export: historyState -> CSV
+// ヘッダーは name（表示名）
+// ----------------------------------------
+function exportCSV() {
+	if (!historyState.length) {
+		alert("履歴がありません");
+		return;
+	}
+
+	// 1) ヘッダー
+	const headers = [
+		"日付",
+		...ALL_METRICS.map(m => m.name),
+		...ALL_METRICS.map(m => `${m.name}(差分)`)
+	];
+
+	// 2) 行データ
+	const rows = historyState.map(entry => {
+		return [
+			entry.date,
+			...ALL_METRICS.map(m => entry.values?.[m.key] ?? 0),
+			...ALL_METRICS.map(m => entry.deltas?.[m.key] ?? 0)
+		];
+	});
+
+	// 3) CSV文字列化
+	const csvText = [
+		headers.map(csvEscape).join(","),
+		...rows.map(row => row.map(csvEscape).join(","))
+	].join("\r\n");
+
+	// 4) UTF-8 BOM付きでダウンロード
+	const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+	const blob = new Blob([bom, csvText], {
+		type: "text/csv;charset=utf-8;"
+	});
+
+	const url = URL.createObjectURL(blob);
+	const a = document.createElement("a");
+	a.href = url;
+	a.download = `salmon_history_${todayISO()}.csv`;
+	document.body.appendChild(a);
+	a.click();
+	document.body.removeChild(a);
+	URL.revokeObjectURL(url);
+}
+
+// ----------------------------------------
+// Import用：1行CSVパース
+// ダブルクォート対応
+// ----------------------------------------
+function parseCsvLine(line) {
+	const result = [];
+	let current = "";
+	let inQuotes = false;
+
+	for (let i = 0; i < line.length; i++) {
+		const ch = line[i];
+
+		if (ch === '"') {
+			if (inQuotes && line[i + 1] === '"') {
+				current += '"';
+				i++;
+			} else {
+				inQuotes = !inQuotes;
+			}
+		} else if (ch === "," && !inQuotes) {
+			result.push(current);
+			current = "";
+		} else {
+			current += ch;
+		}
+	}
+
+	result.push(current);
+	return result;
+}
+
+// ----------------------------------------
+// name -> key 変換表
+// （このツールが出力したCSV専用）
+// ----------------------------------------
+function buildNameToKeyMap() {
+	const map = {
+		"日付": "date"
+	};
+
+	ALL_METRICS.forEach(m => {
+		map[m.name] = m.key;
+		map[`${m.name}(差分)`] = `${m.key}_delta`;
+	});
+
+	return map;
+}
+
+function normalizeDate(input){
+	if (!input) return "";
+
+	let str = String(input).trim();
+
+	// 日付形式を yyyy-mm-dd に統一
+	str = str.replace(/\.|\//g, "-");
+
+	// YYYY-M-D → YYYY-MM-DD に変換
+	const parts = str.split("-");
+
+	if (parts.length !== 3) return "";
+
+	const [y, m, d] = parts;
+
+	const mm = m.padStart(2, "0");
+	const dd = d.padStart(2, "0");
+
+	return `${y}-${mm}-${dd}`;
+}
+
+function isValidDate(dateStr){
+	// 形式チェック YYYY-MM-DD
+	if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+		return false;
+	}
+
+	// 実在する日付かチェック
+	const [y, m, d] = dateStr.split("-").map(Number);
+
+	const date = new Date(y, m - 1, d);
+
+	return (
+		date.getFullYear() === y &&
+		date.getMonth() === m - 1 &&
+		date.getDate() === d
+	);
+}
+// ----------------------------------------
+// Import: CSV文字列 -> historyState
+// 前提：ヘッダーは name（表示名）
+// ----------------------------------------
+function importCSVText(text) {
+	// 1) 改行統一
+	const normalized = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+	const lines = normalized.split("\n").filter(line => line.trim() !== "");
+
+	if (!lines.length) {
+		alert("CSVが空です");
+		return;
+	}
+
+	// 2) ヘッダー行読み取り
+	lines[0] = lines[0].replace(/^\uFEFF/, ""); // BOM除去
+	const headerRow = parseCsvLine(lines[0]);
+
+	const nameToKey = buildNameToKeyMap();
+
+	// 3) ヘッダーを内部キー化
+	const normalizedKeys = headerRow.map(h => {
+		const trimmed = String(h || "").trim();
+		const key = nameToKey[trimmed];
+		if (!key) {
+			throw new Error(`不明な列名です: ${trimmed}`);
+		}
+		return key;
+	});
+
+	// 4) 必須列チェック
+	const requiredKeys = [
+		"date",
+		...ALL_METRICS.map(m => m.key)
+	];
+
+	const missing = requiredKeys.filter(k => !normalizedKeys.includes(k));
+	if (missing.length) {
+		throw new Error(`必須列が不足しています: ${missing.join(", ")}`);
+	}
+
+	// 5) データ行を entry 化
+	const importedEntries = [];
+
+	for (let i = 1; i < lines.length; i++) {
+		const cols = parseCsvLine(lines[i]);
+
+		// 空行スキップ
+		if (!cols.length || cols.every(c => String(c).trim() === "")) continue;
+
+		// 行データを内部キーで record 化
+		const record = {};
+		normalizedKeys.forEach((key, idx) => {
+			record[key] = cols[idx] ?? "";
+		});
+
+		if (!record.date || !String(record.date).trim()) continue;
+		const normalizedDate = normalizeDate(record.date);
+
+		// バリデーション追加
+		if (!isValidDate(normalizedDate)){
+			throw new Error(`日付が不正です（${i+1}行目）: ${record.date}`)
+		}
+
+		const entry = {
+			date: normalizedDate,
+			createdAt: new Date().toISOString(),
+			values: { ...defaults() },
+			deltas: {}
+		};
+
+		// values
+		ALL_METRICS.forEach(m => {
+			entry.values[m.key] = Number(record[m.key] || 0);
+		});
+
+		// deltas（読めるなら読む。ただし最後に再計算される）
+		ALL_METRICS.forEach(m => {
+			entry.deltas[m.key] = Number(record[`${m.key}_delta`] || 0);
+		});
+
+		importedEntries.push(entry);
+	}
+
+	// 6) 同日上書きマージ
+	const mergedMap = new Map();
+
+	// 既存
+	historyState.forEach(entry => {
+		mergedMap.set(entry.date, {
+			date: entry.date,
+			createdAt: entry.createdAt || new Date().toISOString(),
+			values: { ...defaults(), ...entry.values },
+			deltas: { ...(entry.deltas || {}) }
+		});
+	});
+
+	// 取込データで同日上書き
+	importedEntries.forEach(entry => {
+		mergedMap.set(entry.date, entry);
+	});
+
+	// 7) 日付順ソート＋差分再計算＋最大件数制限
+	historyState = sortAndRecalculateHistory(Array.from(mergedMap.values()))
+		.slice(-HISTORY_LIMIT);
+
+	// 8) 保存＆再描画
+	saveHistory();
+	updateHistorySelect();
+	renderAll();
+	renderHistoryChart();
+	renderHistoryList();
+
+	alert(`CSVを取り込みました（${historyState.length}件）`);
+}
+
+// ----------------------------------------
+// file input -> FileReader
+// ----------------------------------------
+function handleCsvImportFile(file) {
+	if (!file) return;
+
+	const reader = new FileReader();
+
+	reader.onload = event => {
+		try {
+			importCSVText(event.target.result);
+		} catch (err) {
+			console.error(err);
+			alert(`CSVの読み込みに失敗しました: ${err.message}`);
+		} finally {
+			csvImportInput.value = "";
+		}
+	};
+
+	reader.onerror = () => {
+		alert("ファイルの読み込みに失敗しました。");
+		csvImportInput.value = "";
+	};
+
+	reader.readAsText(file, "UTF-8");
+}
+// ----------------------------------------
+// イベント登録
+// ----------------------------------------
+if (exportCsvBtn) {
+	exportCsvBtn.addEventListener("click", exportCSV);
+}
+
+if (csvImportInput) {
+	csvImportInput.addEventListener("change", e => {
+		const file = e.target.files?.[0];
+		handleCsvImportFile(file);
+	});
+}
 
 // init
 buildGrid(bossInputsEl, BOSS_METRICS);
@@ -568,4 +852,4 @@ document.getElementById("saveHistoryBtn").addEventListener("click", () => { save
 document.getElementById("clearHistoryBtn").addEventListener("click", () => { clearHistory(); alert("履歴を削除しました。"); });
 document.getElementById("resetBtn").addEventListener("click", resetInputs);
 loadHistoryBtn.addEventListener("click", loadSelectedHistoryIntoForm);
-historySelect.addEventListener("change", () => {renderHistoryList();});
+historySelect.addEventListener("change", () => {renderHistoryList(); renderAll();});
