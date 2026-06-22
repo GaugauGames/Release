@@ -5,13 +5,8 @@ const HISTORY_LIMIT = 10;
 
 const bossInputsEl = document.getElementById("bossInputs");
 const extraInputsEl = document.getElementById("extraInputs");
-const rankingEl = document.getElementById("ranking");
-const summaryEl = document.getElementById("summary");
-const extraSummaryEl = document.getElementById("extraSummary");
 const historyListEl = document.getElementById("historyList");
 const recordDateEl = document.getElementById("recordDate");
-const shareTextEl = document.getElementById("shareText");
-const shareUrlEl = document.getElementById("shareUrl");
 const historyMetricSelectEl = document.getElementById("historyMetricSelect");
 const mainCanvas = document.getElementById("mainChart");
 const historyCanvas = document.getElementById("historyChart");
@@ -167,6 +162,13 @@ function saveSnapshot(){
 
 	saveHistory();
 	updateHistorySelect();
+	
+	// 保存した日付のデータを選択
+	const index = historyState.findIndex(e => e.date === date);
+	if (index !== -1){
+		historySelect.value = String(index);
+	}
+
 	renderAll();
 	renderHistoryList();
 	renderHistoryChart();
@@ -515,12 +517,14 @@ function editShareText(){
 	const entry = getChartSourceEntry();
 	const bossData = orderedBossData(entry);
 	const stats = bossStatsFrom(bossData);
+	const deltas = entry.deltas
 
-	const top3 = stats.top3.map((d,i)=>`${i+1}位 ${d.name} ${d.value}`).join("\n");
-	const eggs = entry.values["goldenEggs"] ?? 0;
+	const top3 = stats.top3.map((d,i)=>`${i+1}位 ${d.name} ${d.value}(+${deltas?.[d.key]})`).join("\n");
+	//const eggs = entry.values["goldenEggs"] ?? 0;
 
 	const textPrefix=("オオモノ討伐数を更新！").trim();
-	const text = `${textPrefix}\n${entry.date || todayISO()}\nTOP3\n${top3}\n\n金イクラ ${eggs}\n`;
+	const text = `${textPrefix}\n${entry.date || todayISO()}\nTOP3\n${top3}`;
+					//\n\n金イクラ ${eggs}\n`;
 
 	add_result_txt(text);
 }

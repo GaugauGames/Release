@@ -29,7 +29,7 @@ const CATEGORY_LABEL = { near: "近距離", mid: "中距離", far: "遠距離", 
 
 /////// 固定値設定 /////////
 // ハッシュタグ
-var shareHashtag = "スプラトゥーン3,Splatoon3,サモランチャート,サーモンランNW";
+var shareHashtag = "スプラトゥーン3,サモランチャート,サーモンランNW";
 ////////////////////////////
 
 
