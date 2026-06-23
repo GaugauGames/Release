@@ -188,7 +188,7 @@ function do_result_twitter(blank)
 {
 	var tmp_txt = (share_txt ==""|blank) ? document.title + "\n" : share_txt;
 	// パーセントエンコード
-	tmp_txt = encodeURI(tmp_txt);
+	tmp_txt = encodeURIComponent(tmp_txt);
 
 	var url_txt = "https://x.com/intent/tweet?hashtags=" + shareHashtag + "&text="+ tmp_txt + "&url=" + document.URL;
 	window.open(url_txt,"_blank");
