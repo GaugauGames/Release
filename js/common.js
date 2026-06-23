@@ -52,8 +52,9 @@ function write_navigation(){
 		        </li>\
 	<!-- その他 -->\
 		        <li class="nav-item dropup">\
-		          <a class="nav-link dropdown-toggle" href="#" id="dropdown11" data-bs-toggle="dropdown" aria-expanded="false">その他</a>\
+		          <a class="nav-link dropdown-toggle" href="#" id="dropdown11" data-bs-toggle="dropdown" aria-expanded="false">チャート</a>\
 		          <ul class="dropdown-menu" aria-labelledby="dropdown11">\
+		            <li><a class="dropdown-item" href="./howto_chart.html">使い方</a></li>\
 		            <li><a class="dropdown-item" href="./salmon_chart.html">サモランチャート</a></li>\
 		          </ul>\
 		        </li>\
