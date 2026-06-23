@@ -208,7 +208,7 @@ function do_result_line(blank)
 	var tmp_txt = (share_txt ==""|blank) ? document.title + "\n" : share_txt;
 	tmp_txt += document.URL;
 	// パーセントエンコード
-	tmp_txt = encodeURI(tmp_txt);
+	tmp_txt = encodeURIComponent(tmp_txt);
 
 	var url_txt = "https://line.me/R/share?text="+ tmp_txt;
 	window.open(url_txt,"_blank");
@@ -228,7 +228,7 @@ function do_result_Bsky(blank)
 	var tmp_txt = (share_txt ==""|blank) ? document.title + "\n" : share_txt;
 	tmp_txt = tmp_txt + " #" + shareHashtag.replace(","," #") + "\n" + document.URL;
 	// パーセントエンコード
-	tmp_txt = encodeURI(tmp_txt);
+	tmp_txt = encodeURIComponent(tmp_txt);
 
 	var url_txt = "https://bsky.app/intent/compose?text="+ tmp_txt;
 	window.open(url_txt,"_blank");
