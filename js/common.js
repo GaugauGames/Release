@@ -31,7 +31,8 @@ function write_twitter(){
 // ナビゲーションバーに表示する項目を設定
 function write_navigation(){
 	var str = 
-		'<nav class="navbar fixed-bottom navbar-expand-sm navbar-dark bg-dark">\
+		'<div align="center">※2026/6/20 Netlifyにサーバー移転しました</div>\
+		<nav class="navbar fixed-bottom navbar-expand-sm navbar-dark bg-dark">\
 		  <div class="container-fluid">\
 	<!-- タイトル -->\
 		    <a class="navbar-brand" href="./index.html">GauGau Games</a>\
