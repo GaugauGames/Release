@@ -24,6 +24,7 @@ html,body{margin:0;padding:0}
 body{
   font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Sans","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif;
   line-height:1.5;
+  padding-bottom: 4.5rem;
 }
 button,input,select{font:inherit}
 .app-shell{width:min(100%,1320px);margin:0 auto;padding:16px 12px 40px}

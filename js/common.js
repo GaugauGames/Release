@@ -250,3 +250,29 @@ function result_copy()
 	const success = document.execCommand("copy");
 	document.body.removeChild(textarea);
 }
+
+function setModal()
+{
+	const modal = document.getElementById("imgModal");
+	const modalImg = document.getElementById("imgModalContent");
+
+	// 全サムネにイベント
+	document.querySelectorAll(".howto-thumb").forEach(img => {
+		img.onclick = function(){
+			modal.style.display = "block";
+			modalImg.src = this.src;
+		};
+	});
+
+	// 閉じるボタン
+	document.querySelector(".img-modal-close").onclick = function(){
+		modal.style.display = "none";
+	};
+
+	// 背景クリックで閉じる
+	modal.onclick = function(e){
+		if (e.target === modal){
+			modal.style.display = "none";
+		}
+	};
+}

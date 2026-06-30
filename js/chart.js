@@ -523,7 +523,7 @@ function editShareText(){
 	//const eggs = entry.values["goldenEggs"] ?? 0;
 
 	const textPrefix=("オオモノ討伐数を更新！").trim();
-	const text = `${textPrefix}\n${entry.date || todayISO()}\nTOP3\n${top3}`;
+	const text = `${textPrefix}\n${entry.date || todayISO()}\nTOP3\n${top3}\n`;
 					//\n\n金イクラ ${eggs}\n`;
 
 	add_result_txt(text);
