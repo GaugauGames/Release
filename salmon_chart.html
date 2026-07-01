@@ -9,7 +9,7 @@
 	<meta name="description" content="サーモンランのオオモノ討伐数を記録・可視化します。">
 
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-	<link href="https://use.fontawesome.com/releases/v6.5.1/css/all.css" rel="stylesheet">
+	<link href="https://use.fontawesome.com/releases/v6.5.2/css/all.css" rel="stylesheet">
 	<link rel="stylesheet" href="./css/mainstyle.css" type="text/css">
 	<link rel="stylesheet" href="./css/chartstyle.css" type="text/css">
 	<style>
@@ -94,8 +94,9 @@
 
 	<div align="right">
 		<button id="saveImageBtn" class="btn btn-ghost btn-sm">画像保存</button>
-		結果を投稿：
+		投稿：
 		<button type="button" class="btn btn-dark btn-sm" onClick="result_twitter2()"><i class="fab fa-x-twitter"></i></button> 
+		<button type="button" class="btn btn-primary btn-sm" onClick="result_Bsky2()"><i class="fa-brands fa-bluesky"></i></button> 
 		<button type="button" class="btn btn-success btn-sm" onClick="result_line2()"><i class="fab fa-line"></i></button> 
 		<input type="button" class="btn btn-light btn-sm" value="コピー" onClick="result_copy()">
 	</div>
@@ -129,6 +130,9 @@
 	<table class="table table-dark table-striped">
 		<thead><tr><td class="td_nowrap">更新日</td><td>内容</td></tr></thead>
 		<tbody>
+		<tr><td>2026/7/1</td>
+			<td>結果投稿にBluesky追加。</td>
+		</tr>
 		<tr><td>2026/6/30</td>
 			<td>使い方ページ更新。画像を追加</td>
 		</tr>
@@ -145,7 +149,7 @@
 	</table>
 	</main>
 
-	<script src="./js/common.js?ver=20260630" type="text/javascript"></script>
+	<script src="./js/common.js?ver=20260701" type="text/javascript"></script>
 	<script src="./js/data_salmon.js?ver=20260622" type="text/javascript"></script>
 	<script src="./js/chart.js?ver=20260630" type="text/javascript"></script>
 	

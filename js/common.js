@@ -228,7 +228,7 @@ function result_Bsky2()
 function do_result_Bsky(blank)
 {
 	var tmp_txt = (share_txt ==""|blank) ? document.title + "\n" : share_txt;
-	tmp_txt = tmp_txt + " #" + shareHashtag.replace(","," #") + "\n" + document.URL;
+	tmp_txt = tmp_txt + " #" + shareHashtag.replace(/\,/g," #") + "\n" + document.URL;
 	// パーセントエンコード
 	tmp_txt = encodeURIComponent(tmp_txt);
 
@@ -240,8 +240,11 @@ function do_result_Bsky(blank)
 // クリップボードにコピー
 function result_copy()
 {
+	var tmp_txt = (share_txt =="") ? document.title + "\n" : share_txt;
+	tmp_txt = tmp_txt + " #" + shareHashtag.replace(/\,/g," #") + "\n" + document.URL;
+
 	const textarea = document.createElement("textarea");
-	textarea.value = share_txt;
+	textarea.value = tmp_txt;
 	textarea.style.position = "fixed";
 	textarea.style.opacity = "0";
 	document.body.appendChild(textarea);
