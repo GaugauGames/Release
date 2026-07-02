@@ -32,7 +32,7 @@
 			<div class="accordion-body">
 				<p class="note">
 				オオモノシャケの討伐数をレーダーチャートに表します。<br>
-				オオモノシャケに加え、オカシラシャケ、金イクラ納品数を過去10件まで記録し、増分を見れます。
+				オオモノシャケに加え、オカシラシャケ、金イクラ納品数を過去20件まで記録し、増分を見れます。
 				記録したい日付とその時の討伐数等を入力してください。<br>
 				<a href="./howto_chart.html" target="_blank">>> 使い方</a></p>
 				<br>
@@ -73,7 +73,7 @@
 				<br>
 				<div class="row">
 					<div class="col-8">
-						履歴(最大10件)<br>
+						履歴(最大20件)<br>
 						<select id="historySelect" class="form-select form-select-sm"></select>
 					</div>
 					<div class="col-4">
@@ -95,10 +95,10 @@
 	<div align="right">
 		<button id="saveImageBtn" class="btn btn-ghost btn-sm">画像保存</button>
 		投稿：
-		<button type="button" class="btn btn-dark btn-sm" onClick="result_twitter2()"><i class="fab fa-x-twitter"></i></button> 
-		<button type="button" class="btn btn-primary btn-sm" onClick="result_Bsky2()"><i class="fa-brands fa-bluesky"></i></button> 
-		<button type="button" class="btn btn-success btn-sm" onClick="result_line2()"><i class="fab fa-line"></i></button> 
-		<input type="button" class="btn btn-light btn-sm" value="コピー" onClick="result_copy()">
+		<button type="button" class="btn btn-dark btn-sm" onClick="editShareText();result_twitter2()"><i class="fab fa-x-twitter"></i></button> 
+		<button type="button" class="btn btn-primary btn-sm" onClick="editShareText();result_Bsky2()"><i class="fa-brands fa-bluesky"></i></button> 
+		<button type="button" class="btn btn-success btn-sm" onClick="editShareText();result_line2()"><i class="fab fa-line"></i></button> 
+		<input type="button" class="btn btn-light btn-sm" value="コピー" onClick="editShareText();result_copy()">
 	</div>
 
 	<section class="panel output-panel">
@@ -130,6 +130,9 @@
 	<table class="table table-dark table-striped">
 		<thead><tr><td class="td_nowrap">更新日</td><td>内容</td></tr></thead>
 		<tbody>
+		<tr><td>2026/7/2</td>
+			<td>履歴数を20件に変更。チャート表示微修正</td>
+		</tr>
 		<tr><td>2026/7/1</td>
 			<td>結果投稿にBluesky追加。</td>
 		</tr>
@@ -151,7 +154,7 @@
 
 	<script src="./js/common.js?ver=20260701" type="text/javascript"></script>
 	<script src="./js/data_salmon.js?ver=20260622" type="text/javascript"></script>
-	<script src="./js/chart.js?ver=20260630" type="text/javascript"></script>
+	<script src="./js/chart.js?ver=20260702" type="text/javascript"></script>
 	
 	<div id="div1"></div>
 	<script>write_navigation()</script>

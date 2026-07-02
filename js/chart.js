@@ -1,7 +1,8 @@
 const ALL_METRICS = [...BOSS_METRICS, ...EXTRA_METRICS];
 const STORAGE_CURRENT = "salmonrun.current.v4";
 const STORAGE_HISTORY = "salmonrun.history.v4";
-const HISTORY_LIMIT = 10;
+const HISTORY_LIMIT = 20;		// 履歴の最大件数
+const HISTORY_CHART_LIMIT = 10;	// 履歴チャートに表示する最大件数
 
 const bossInputsEl = document.getElementById("bossInputs");
 const extraInputsEl = document.getElementById("extraInputs");
@@ -81,6 +82,9 @@ function initCurrentFromLatestHistoryWithTodayDate(){
 	});
 }
 
+// ----------------------------------------
+// 履歴を日付順にソートし、差分を再計算する
+// ----------------------------------------
 function sortAndRecalculateHistory(entries){
 	const sorted = [...entries].sort((a, b) => {
 		const d = String(a.date || "").localeCompare(String(b.date || ""));
@@ -117,6 +121,9 @@ function buildGrid(rootEl, metrics){
 	});
 }
 
+// ----------------------------------------
+// 入力欄のイベントを設定
+// ----------------------------------------
 function wireInputs(){
 	document.querySelectorAll(".metric-input").forEach(input => {
 		input.addEventListener("input", () => {
@@ -128,12 +135,18 @@ function wireInputs(){
 	});
 }
 
+// ----------------------------------------
+// 描画：履歴メトリック選択
+// ----------------------------------------
 function initMetricSelect(){
 	historyMetricSelectEl.innerHTML = ALL_METRICS.map(m => `<option value="${m.key}">${m.name}</option>`).join("");
 	historyMetricSelectEl.selectIndex = 0;
 	historyMetricSelectEl.addEventListener("change", renderHistoryChart);
 }
 
+// ----------------------------------------
+// データ保存
+// ----------------------------------------
 function saveSnapshot(){
 	const date = recordDateEl.value || todayISO();
 
@@ -156,7 +169,7 @@ function saveSnapshot(){
 		historyState.push(entry);
 	}
 
-	// ソート＋差分再計算＋10件制限
+	// ソート＋差分再計算＋20件制限
 	historyState = sortAndRecalculateHistory(historyState)
 		.slice(-HISTORY_LIMIT);
 
@@ -172,7 +185,6 @@ function saveSnapshot(){
 	renderAll();
 	renderHistoryList();
 	renderHistoryChart();
-	editShareText();
 }
 
 // 入力欄を初期化(0にする)
@@ -270,21 +282,32 @@ function loadSelectedHistoryIntoForm(){
 	renderAll();
 }
 
+// ----------------------------------------
+// 描画：履歴チャート
+// ----------------------------------------
 function renderHistoryChart(){
 	historyCtx.clearRect(0, 0, historyCanvas.width, historyCanvas.height);
 	fillRound(historyCtx, 0, 0, historyCanvas.width, historyCanvas.height, 22, "#ffffff");
 	const metric = metricByKey(historyMetricSelectEl.value || "goldenEggs") || ALL_METRICS[0];
-	const points = historyState.map(entry => ({ date: entry.date, value: entry.deltas?.[metric.key] ?? 0 }));
+	const rawPoints = historyState.map(entry => ({ date: entry.date, value: entry.deltas?.[metric.key] ?? 0 }));
 
-	drawText(historyCtx, `${metric.name} (差分)の推移`, 24, 36, 20, "#2d160d", 900);
-	if (!points.length) {
+	drawText(historyCtx, `${metric.name} (差分)の推移(直近${HISTORY_CHART_LIMIT}件)`, 24, 36, 20, "#2d160d", 900);
+	if (!rawPoints.length) {
 		drawText(historyCtx, "履歴はまだありません。", 24, 72, 14, "#7a4a36", 700);
 		return;
 	}
+
+	// 1件目を除外, 10件までに制限
+	const points = rawPoints.slice(1).slice(-HISTORY_CHART_LIMIT);
+	if (!points.length) {
+		drawText(historyCtx, "履歴が2件以上必要です。", 24, 72, 14, "#7a4a36", 700);
+		return;
+	}
+
 	const pad = { top: 50, right: 28, bottom: 54, left: 44 };
 	const chartW = historyCanvas.width - pad.left - pad.right;
 	const chartH = historyCanvas.height - pad.top - pad.bottom;
-	const maxValue = Math.max(1, ...points.map(p => p.value));
+	const maxValue = Math.ceil(Math.max(1, ...points.map(p => p.value)) / 100) * 100; // 100の倍数に丸める
 
 	historyCtx.strokeStyle = "#e6c5b3";
 	historyCtx.lineWidth = 1;
@@ -352,6 +375,9 @@ function getChartSourceEntry(){
 	return null;
 }
 
+// ----------------------------------------
+// チャート表示用のデータを整形
+// ----------------------------------------
 function orderedBossData(entry){
 	if (!entry) return null;
 
@@ -359,6 +385,9 @@ function orderedBossData(entry){
 	return BOSS_METRICS.map(metric => ({ ...metric, value: Number(values?.[metric.key] || 0) }));
 }
 
+// ----------------------------------------
+// 統計情報を計算
+// ----------------------------------------
 function bossStatsFrom(data){
 	if (!data) return null;
 
@@ -366,10 +395,13 @@ function bossStatsFrom(data){
 	const byCategory = { near: 0, mid: 0, far: 0 };
 	data.forEach(d => { byCategory[d.category] += d.value; });
 	const top3 = [...data].sort((a,b) => b.value - a.value || a.name.localeCompare(b.name, "ja")).slice(0, 3);
-	const maxValue = Math.max(10, ...data.map(d => d.value));
+	const maxValue = Math.ceil(Math.max(10, ...data.map(d => d.value)) / 5000) * 5000; // 5000の倍数に丸める
 	return { total, byCategory, top3, maxValue };
 }
 
+// ----------------------------------------
+// 描画：メインチャート
+// ----------------------------------------
 function renderMainChart(data, stats, entry){
 	mainCtx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
 
@@ -381,6 +413,7 @@ function renderMainChart(data, stats, entry){
 	}
 
 	drawText(mainCtx, `${entry.date} の記録`, 38, 90, 20, "#7a4a36", 700);
+	// グラフ描画
 	const centerX = 600, centerY = 600, radius = 450, levels = 5, N = data.length;
 	for (let lv = 1; lv <= levels; lv++) {
 		const r = radius * (lv / levels);
@@ -394,6 +427,7 @@ function renderMainChart(data, stats, entry){
 		mainCtx.lineWidth = 1;
 		mainCtx.stroke();
 	}
+	// 目盛線を描画
 	data.forEach((_, i) => {
 		const a = angleAt(i, N);
 		mainCtx.beginPath();
@@ -404,6 +438,7 @@ function renderMainChart(data, stats, entry){
 	});
 	for (let lv = 1; lv <= levels; lv++) drawText(mainCtx, String(Math.round(stats.maxValue * lv / levels)), centerX + 10, centerY - radius * (lv / levels), 20, "#a66b52", 700);
 
+	// データを描画
 	mainCtx.beginPath();
 	data.forEach((d, i) => {
 		const ratio = d.value / stats.maxValue, a = angleAt(i, N), x = centerX + Math.cos(a) * radius * ratio, y = centerY + Math.sin(a) * radius * ratio;
@@ -416,6 +451,7 @@ function renderMainChart(data, stats, entry){
 	mainCtx.fill();
 	mainCtx.stroke();
 
+	// データポイントとラベルを描画
 	data.forEach((d, i) => {
 		const a = angleAt(i, N), ratio = d.value / stats.maxValue;
 		const x = centerX + Math.cos(a) * radius * ratio, y = centerY + Math.sin(a) * radius * ratio;
@@ -437,6 +473,9 @@ function renderMainChart(data, stats, entry){
 	drawDeltaTable(50, 1350, 1135, 200, entry);
 }
 
+// ----------------------------------------
+// 描画：凡例
+//
 function drawLegend(){
 	[ [60, css("--near"), "近距離"], [170, css("--mid"), "中距離"], [280, css("--far"), "遠距離"] ].forEach(([x,c,label]) => {
 		mainCtx.beginPath(); mainCtx.arc(x, 110, 6, 0, Math.PI * 2); mainCtx.fillStyle = c; mainCtx.fill(); drawText(mainCtx, label, x + 14, 120, 20, "#7a4a36", 800);
@@ -447,6 +486,9 @@ function drawLegend(){
 	drawText(mainCtx, "今回値", 426, 120, 20, "#7a4a36", 800);
 }
 
+// ----------------------------------------
+// 描画：トップ3カード
+// ----------------------------------------
 function drawTop3Card(x, y, w, h, top3){
 	fillRound(mainCtx, x, y, w, h, 18, "#fffdfa"); strokeRound(mainCtx, x, y, w, h, 18, "#efc9b4");
 	drawText(mainCtx, "トップ3", x + 18, y + 34, 24, "#2d160d", 900);
@@ -460,6 +502,9 @@ function drawTop3Card(x, y, w, h, top3){
 	});
 }
 
+// ----------------------------------------
+// 描画：カテゴリ割合カード
+// ----------------------------------------
 function drawCategoryCard(x, y, w, h, stats){
 	fillRound(mainCtx, x, y, w, h, 18, "#fffdfa"); strokeRound(mainCtx, x, y, w, h, 18, "#efc9b4");
 	drawText(mainCtx, "分類割合", x + 18, y + 34, 24, "#2d160d", 900);
@@ -469,9 +514,13 @@ function drawCategoryCard(x, y, w, h, stats){
 	if (nearW > 0) fillRound(mainCtx, barX, barY, nearW, barH, 18, css("--near"));
 	if (midW > 0) fillRect(mainCtx, barX + nearW, barY, midW, barH, css("--mid"));
 	if (farW > 0) fillRound(mainCtx, barX + nearW + midW, barY, farW, barH, 18, css("--far"));
-	drawText(mainCtx, `近距離 ${stats.byCategory.near}`, x + 18, y + 124, 22, css("--near"), 900);
-	drawText(mainCtx, `中距離 ${stats.byCategory.mid}`, x + 260, y + 124, 22, css("--mid"), 900);
-	drawText(mainCtx, `遠距離 ${stats.byCategory.far}`, x + 500, y + 124, 22, css("--far"), 900);
+
+	// 割合を計算して表示
+	const pct = (v) => stats.total ? ((v / stats.total) * 100).toFixed(1) : "0.0";
+
+	drawText(mainCtx, `近距離 ${pct(stats.byCategory.near)}%`, x + 18, y + 124, 22, css("--near"), 900);
+	drawText(mainCtx, `中距離 ${pct(stats.byCategory.mid)}%`, x + 260, y + 124, 22, css("--mid"), 900);
+	drawText(mainCtx, `遠距離 ${pct(stats.byCategory.far)}%`, x + 500, y + 124, 22, css("--far"), 900);
 }
 
 function drawDeltaTable(x, y, w, h, entry){
