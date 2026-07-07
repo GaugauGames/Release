@@ -6,13 +6,16 @@
 	<meta http-equiv="Content-Script-Type" content="text/javascript">
 	<meta http-equiv="Content-Style-Type" content="text/css">
 	
-	<meta name="keywords" content="モンハンワイルズ,モンハンサンブレイク,モンハンルーレット,ルーレット,ランダム,サーモンラン,スプラトゥーン3">
-	<meta name="description" content="モンハン、スプラ3のツールを作ってます。">
+	<meta name="keywords" content="モンハンワイルズ,モンハンサンブレイク,モンハン,ルーレット,サーモンラン,スプラトゥーン3,オオモノシャケ討伐数">
+	<meta name="description" content="モンハン、スプラ3向けのツールを作ってます。">
 
-	<script src="./js/common.js?ver=20260624" type="text/javascript"></script>
-
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-	<link href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" rel="stylesheet">
+	<script src="./js/common.js?ver=20260707" type="text/javascript"></script>
+	<script>
+		// ハッシュタグ
+		var shareHashtag = "モンスターハンター,スプラトゥーン3,ルーレット,サーモンラン";
+	</script>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+	<link href="https://use.fontawesome.com/releases/v6.5.2/css/all.css" rel="stylesheet">
 	<link rel="stylesheet" href="./css/mainstyle.css" type="text/css">
 
     <title>GauGau Games</title>
@@ -22,17 +25,17 @@
 	<H2 class="page_title">GauGau Games</h2>
 
 	<div align="right">
-		<a href='https://twitter.com/intent/tweet?hashtags=モンハンルーレット&text='+document.title class="twitter-share-button" data-show-count="false">twitterで共有</a>
-			<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-		<button type="button" class="btn btn-success btn-sm" onClick="result_line1()"><i class="fab fa-line"></i> LINE</button>
+		<button type="button" class="btn btn-dark btn-sm" onClick="postResultSNS('twitter',true)"><i class="fab fa-x-twitter"></i></button> 
+		<button type="button" class="btn btn-primary btn-sm" onClick="postResultSNS('bluesky',true)"><i class="fa-brands fa-bluesky"></i></button> 
+		<button type="button" class="btn btn-success btn-sm" onClick="postResultSNS('line',true)"><i class="fab fa-line"></i></button> 
 	</div>
 	<br>
-	モンハンで、どのクエストに行こうか悩んだらランダムに決めませんか？<br>
+	普段遊んでいるゲーム(モンハン、スプラトゥーン3)で気まぐれで思いついた便利なツールを作成しています。<br>
 	<br>
 	■はじめに<br>
-	クエスト・武器をランダムに決定するというよくあるツールを、モンハンライズ、ワイルズ向けに作成しました。
+	クエスト・武器をランダムに決定するというよくあるツールを、モンハンサンブレイク、ワイルズ向けに作成しました。
 	すでに他の方が作成したものがありますが、勉強を兼ねてスマホ向けとオリジナル要素も加えて作成しています。<br>
-	他にも、スプラ3でのルーレットや、討伐記録・可視化するツールも作ってます。<br>
+	他にも、スプラ3でのルーレットや、サモランのオオモノシャケ討伐記録・可視化するツールも作ってます。<br>
 	<br>
 	■ルーレット<br>
 	<a href="./howto.html">使い方</a>：ルーレットの使い方<br>
@@ -41,8 +44,8 @@
 	<a href="./spl3_roulette.html">for スプラトゥーン3</a>：スプラ3向けルーレット。<br>
 	<br>
 	■チャート<br>
-	<a href="./howto_chart.html">使い方</a>：チャートの使い方<br>
-	<a href="./salmon_chart.html">サモランチャート</a>：オオモノの討伐数を記録して、討伐状況を可視化します。<br>
+	<a href="./howto_chart.html">使い方</a>：討伐記録・チャート表示使い方<br>
+	<a href="./salmon_chart.html">サーモンラン オオモノシャケ討伐記録</a>：オオモノの討伐数を記録して、討伐状況を可視化します。<br>
 	<br>
 	
 	■Contact<br>

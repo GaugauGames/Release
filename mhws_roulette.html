@@ -8,7 +8,7 @@
 	<meta name="keywords" content="モンハン,モンハンワイルズ,MHWilds,モンハンルーレット,ルーレット,ランダム">
 	<meta name="description" content="モンハンのクエスト、武器をランダムで決定します。">
 
-	<script src="./js/common.js?ver=20250701" type="text/javascript"></script>
+	<script src="./js/common.js?ver=20250707" type="text/javascript"></script>
 	<script src="./js/data_mhws.js?ver=20260701" type="text/javascript"></script>
 	<script src="./js/roulette.js?ver=20250407" type="text/javascript"></script>
 
@@ -280,9 +280,9 @@
 		</div>
 		<div class="col-6">
 			<div align="right">
-				<button type="button" class="btn btn-dark btn-sm" onClick="result_twitter1()"><i class="fab fa-x-twitter"></i></button> 
-				<button type="button" class="btn btn-primary btn-sm" onClick="result_Bsky1()"><i class="fa-brands fa-bluesky"></i></button> 
-				<button type="button" class="btn btn-success btn-sm" onClick="result_line1()"><i class="fab fa-line"></i></button> 
+				<button type="button" class="btn btn-dark btn-sm" onClick="postResultSNS('twitter',true)"><i class="fab fa-x-twitter"></i></button> 
+				<button type="button" class="btn btn-primary btn-sm" onClick="postResultSNS('bluesky',true)"><i class="fa-brands fa-bluesky"></i></button> 
+				<button type="button" class="btn btn-success btn-sm" onClick="postResultSNS('line',true)"><i class="fab fa-line"></i></button> 
 			</div>
 			<div align="right">
 				<a href="./howto.html">>> 使い方</a>
@@ -315,9 +315,9 @@
 		</div>
 		<div class="col-9" align="right">
 			共有：
-			<button type="button" class="btn btn-dark btn-sm" onClick="result_twitter2()"><i class="fab fa-x-twitter"></i></button> 
-			<button type="button" class="btn btn-primary btn-sm" onClick="result_Bsky2()"><i class="fa-brands fa-bluesky"></i></button> 
-			<button type="button" class="btn btn-success btn-sm" onClick="result_line2()"><i class="fab fa-line"></i></button> 
+			<button type="button" class="btn btn-dark btn-sm" onClick="postResultSNS('twitter',false)"><i class="fab fa-x-twitter"></i></button> 
+			<button type="button" class="btn btn-primary btn-sm" onClick="postResultSNS('bluesky',false)"><i class="fa-brands fa-bluesky"></i></button> 
+			<button type="button" class="btn btn-success btn-sm" onClick="postResultSNS('line',false)"><i class="fab fa-line"></i></button> 
 			<input type="button" class="btn btn-outline-light btn-sm" value="コピー" onClick="result_copy()">
 		</div>
 	</div>

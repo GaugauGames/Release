@@ -17,6 +17,7 @@ const historySelect = document.getElementById("historySelect");
 const loadHistoryBtn = document.getElementById("loadHistoryBtn");
 const exportCsvBtn = document.getElementById("exportCsvBtn");
 const csvImportInput = document.getElementById("csvImportInput");
+const chartModeEl = document.getElementById("chartMode");
 
 function css(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
 const CATEGORY_COLOR = { near: css("--near"), mid: css("--mid"), far: css("--far"), extra: css("--extra") };
@@ -289,18 +290,28 @@ function renderHistoryChart(){
 	historyCtx.clearRect(0, 0, historyCanvas.width, historyCanvas.height);
 	fillRound(historyCtx, 0, 0, historyCanvas.width, historyCanvas.height, 22, "#ffffff");
 	const metric = metricByKey(historyMetricSelectEl.value || "goldenEggs") || ALL_METRICS[0];
-	const rawPoints = historyState.map(entry => ({ date: entry.date, value: entry.deltas?.[metric.key] ?? 0 }));
 
-	drawText(historyCtx, `${metric.name} (差分)の推移(直近${HISTORY_CHART_LIMIT}件)`, 24, 36, 20, "#2d160d", 900);
-	if (!rawPoints.length) {
-		drawText(historyCtx, "履歴はまだありません。", 24, 72, 14, "#7a4a36", 700);
-		return;
+	const chartMode = chartModeEl.value || CHART_MODE.DELTA;
+	let points = [];
+
+	switch (chartMode) {
+		case CHART_MODE.DELTA:
+			// 差分チャート用のデータを作成
+			points = buildDeltaPoints(metric.key);
+			break;
+		case CHART_MODE.DAILY_AVERAGE:
+			// 日平均値チャート用のデータを作成
+			points = buildDailyAveragePoints(metric.key);
+			break;
 	}
 
-	// 1件目を除外, 10件までに制限
-	const points = rawPoints.slice(1).slice(-HISTORY_CHART_LIMIT);
+	const modeName =
+		chartModeEl.value === CHART_MODE.DAILY_AVERAGE
+			? "日平均" : "差分";
+
+	drawText(historyCtx, `${metric.name} (${modeName})の推移(直近${HISTORY_CHART_LIMIT}件)`, 24, 36, 20, "#2d160d", 900);
 	if (!points.length) {
-		drawText(historyCtx, "履歴が2件以上必要です。", 24, 72, 14, "#7a4a36", 700);
+		drawText(historyCtx, "履歴はまだありません。", 24, 72, 14, "#7a4a36", 700);
 		return;
 	}
 
@@ -350,6 +361,57 @@ function renderHistoryChart(){
 		drawText(historyCtx, String(p.value), x, y - 10, 11, "#2d160d", 800, "center");
 		drawText(historyCtx, p.date.slice(5), x, pad.top + chartH + 22, 11, "#7a4a36", 700, "center");
 	});
+}
+
+// ----------------------------------------
+// 描画モード
+// ----------------------------------------
+const CHART_MODE = {
+	DELTA: "delta",
+	DAILY_AVERAGE: "dailyAverage"
+};
+
+// ----------------------------------------
+// 描画：差分チャート用のデータを作成
+// ----------------------------------------
+function buildDeltaPoints(metricKey) {
+	return historyState
+		.slice(1)
+		.slice(-HISTORY_CHART_LIMIT)
+		.map(entry => ({
+			date: entry.date,
+			value: entry.deltas?.[metricKey] ?? 0
+		}));
+}
+
+// ----------------------------------------
+// 描画：日平均値チャート用のデータを作成
+// ----------------------------------------
+function buildDailyAveragePoints(metricKey) {
+	const points = [];
+	for (let i = 1; i < historyState.length; i++) {
+		const current = historyState[i];
+		const previous = historyState[i - 1];
+		const currentValue =
+			current.values?.[metricKey] ?? 0;
+		const previousValue =
+			previous.values?.[metricKey] ?? 0;
+		const days =
+			Math.max(
+				1,
+				Math.round(
+					(new Date(current.date) - new Date(previous.date))
+					/ (1000 * 60 * 60 * 24)
+				)
+			);
+		points.push({
+			date: current.date,
+			value: Number(
+				((currentValue - previousValue) / days).toFixed(1)
+			)
+		});
+	}
+	return points.slice(-HISTORY_CHART_LIMIT);
 }
 
 function renderAll(){
@@ -475,7 +537,7 @@ function renderMainChart(data, stats, entry){
 
 // ----------------------------------------
 // 描画：凡例
-//
+// ----------------------------------------
 function drawLegend(){
 	[ [60, css("--near"), "近距離"], [170, css("--mid"), "中距離"], [280, css("--far"), "遠距離"] ].forEach(([x,c,label]) => {
 		mainCtx.beginPath(); mainCtx.arc(x, 110, 6, 0, Math.PI * 2); mainCtx.fillStyle = c; mainCtx.fill(); drawText(mainCtx, label, x + 14, 120, 20, "#7a4a36", 800);
@@ -523,6 +585,9 @@ function drawCategoryCard(x, y, w, h, stats){
 	drawText(mainCtx, `遠距離 ${pct(stats.byCategory.far)}%`, x + 500, y + 124, 22, css("--far"), 900);
 }
 
+// ----------------------------------------
+// 描画：差分テーブル
+// ----------------------------------------
 function drawDeltaTable(x, y, w, h, entry){
 	fillRound(mainCtx, x, y, w, h, 18, "#fffdfa"); strokeRound(mainCtx, x, y, w, h, 18, "#efc9b4");
 	drawText(mainCtx, "オカシラ、金イクラ", x + 18, y + 34, 24, "#2d160d", 900);
@@ -540,6 +605,9 @@ function drawDeltaTable(x, y, w, h, entry){
 	});
 }
 
+// ----------------------------------------
+// 描画：名前チップ
+// ----------------------------------------
 function drawNameChip(text, x, y, bg, angle){
 	const padX = 9; const w = Math.max(54, measureText(mainCtx, text, 20, 800) + padX * 2); const h = 26;
 	let left = x - w / 2, top = y - h / 2;
@@ -557,10 +625,15 @@ function fillRound(ctx, x, y, w, h, r, fill){ ctx.save(); roundRectPath(ctx, x, 
 function strokeRound(ctx, x, y, w, h, r, stroke){ ctx.save(); roundRectPath(ctx, x, y, w, h, r); ctx.strokeStyle = stroke; ctx.lineWidth = 1; ctx.stroke(); ctx.restore(); }
 function fillRect(ctx, x, y, w, h, fill){ ctx.save(); ctx.fillStyle = fill; ctx.fillRect(x, y, w, h); ctx.restore(); }
 function formatFileDate(date = new Date()){ const y=date.getFullYear(), m=String(date.getMonth()+1).padStart(2,"0"), d=String(date.getDate()).padStart(2,"0"), hh=String(date.getHours()).padStart(2,"0"), mm=String(date.getMinutes()).padStart(2,"0"); return `${y}${m}${d}-${hh}${mm}`; }
-function saveImage(){ const a=document.createElement("a"); a.download=`salmon-chart-${formatFileDate()}.png`; a.href=mainCanvas.toDataURL("image/png"); a.click(); }
+function saveImage(){
+	 const a=document.createElement("a");
+	 a.download=`salmon-chart-${formatFileDate()}.png`;
+	 a.href=mainCanvas.toDataURL("image/png");
+	 a.click(); 
+	}
 
 // 投稿用テキストを編集
-function editShareText(){
+function editShareText(type){
 	share_txt = "";
 
 	const entry = getChartSourceEntry();
@@ -576,6 +649,13 @@ function editShareText(){
 					//\n\n金イクラ ${eggs}\n`;
 
 	add_result_txt(text);
+
+	if (type === "clipboard"){
+		result_copy();
+	}
+	else{
+		postResultSNS(type, false);
+	}
 }
 
 function clearHistory(){
@@ -904,5 +984,10 @@ document.getElementById("saveImageBtn").addEventListener("click", saveImage);
 document.getElementById("saveHistoryBtn").addEventListener("click", () => { saveSnapshot(); alert("今回の内容を日付順で履歴保存し、差分を再計算しました。"); });
 document.getElementById("clearHistoryBtn").addEventListener("click", () => { clearHistory(); alert("履歴を削除しました。"); });
 document.getElementById("resetBtn").addEventListener("click", resetInputs);
+document.getElementById("chartMode").addEventListener("change", () => {renderHistoryChart();});
+document.getElementById("btnSNSTwitter").addEventListener("click", () => { editShareText("twitter"); });
+document.getElementById("btnSNSBluesky").addEventListener("click", () => { editShareText("bluesky"); });
+document.getElementById("btnSNSLine").addEventListener("click", () => { editShareText("line"); });
+document.getElementById("btnCopyText").addEventListener("click", () => { editShareText("clipboard"); });
 loadHistoryBtn.addEventListener("click", loadSelectedHistoryIntoForm);
 historySelect.addEventListener("change", () => {renderHistoryList(); renderAll();});

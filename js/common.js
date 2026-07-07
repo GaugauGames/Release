@@ -56,7 +56,7 @@ function write_navigation(){
 		          <a class="nav-link dropdown-toggle" href="#" id="dropdown11" data-bs-toggle="dropdown" aria-expanded="false">チャート</a>\
 		          <ul class="dropdown-menu" aria-labelledby="dropdown11">\
 		            <li><a class="dropdown-item" href="./howto_chart.html">使い方</a></li>\
-		            <li><a class="dropdown-item" href="./salmon_chart.html">サモランチャート</a></li>\
+		            <li><a class="dropdown-item" href="./salmon_chart.html">オオモノシャケ討伐記録</a></li>\
 		          </ul>\
 		        </li>\
 	<!-- Link -->\
@@ -177,65 +177,31 @@ function add_result_txt(txt)
 	share_txt += txt
 }
 
-// Twitterに投稿
-function result_twitter1()
-{
-	do_result_twitter(true);
-}
-function result_twitter2()
-{
-	do_result_twitter(false);
-}
-function do_result_twitter(blank)
+// SNSに投稿する
+function postResultSNS(type, blank)
 {
 	var tmp_txt = (share_txt ==""|blank) ? document.title + "\n" : share_txt;
-	// パーセントエンコード
+	if(type != "twitter")
+	{
+		tmp_txt = tmp_txt + " #" + shareHashtag.replace(/\,/g," #") + "\n" + document.URL;
+	}
+	// パーセントエンコード変換
 	tmp_txt = encodeURIComponent(tmp_txt);
-
-	var url_txt = "https://x.com/intent/tweet?hashtags=" + shareHashtag + "&text="+ tmp_txt + "&url=" + document.URL;
+	var url_txt = "";
+	switch(type){
+		case "twitter":	// X(旧Twitter)に投稿
+			url_txt = "https://x.com/intent/tweet?hashtags=" + shareHashtag + 
+						"&text="+ tmp_txt + "&url=" + document.URL;
+			break;
+		case "line": // LINEに共有
+			url_txt = "https://line.me/R/share?text="+ tmp_txt;
+			break;
+		case "bluesky":	// BlueSkyに投稿
+			url_txt = "https://bsky.app/intent/compose?text="+ tmp_txt;
+			break;
+	}
 	window.open(url_txt,"_blank");
 }
-
-// LINEに共有
-function result_line1()
-{
-	do_result_line(true);
-}
-function result_line2()
-{
-	do_result_line(false);
-}
-function do_result_line(blank)
-{
-	var tmp_txt = (share_txt ==""|blank) ? document.title + "\n" : share_txt;
-	tmp_txt += document.URL;
-	// パーセントエンコード
-	tmp_txt = encodeURIComponent(tmp_txt);
-
-	var url_txt = "https://line.me/R/share?text="+ tmp_txt;
-	window.open(url_txt,"_blank");
-}
-
-// BlueSkyに投稿
-function result_Bsky1()
-{
-	do_result_Bsky(true);
-}
-function result_Bsky2()
-{
-	do_result_Bsky(false);
-}
-function do_result_Bsky(blank)
-{
-	var tmp_txt = (share_txt ==""|blank) ? document.title + "\n" : share_txt;
-	tmp_txt = tmp_txt + " #" + shareHashtag.replace(/\,/g," #") + "\n" + document.URL;
-	// パーセントエンコード
-	tmp_txt = encodeURIComponent(tmp_txt);
-
-	var url_txt = "https://bsky.app/intent/compose?text="+ tmp_txt;
-	window.open(url_txt,"_blank");
-}
-
 
 // クリップボードにコピー
 function result_copy()

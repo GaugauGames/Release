@@ -8,7 +8,7 @@
 	<meta name="keywords" content="スプラトゥーン3,Splatoon3,ルーレット,ランダム,サーモンラン">
 	<meta name="description" content="スプラ3の武器をランダムで決定します。">
 
-	<script src="./js/common.js?ver=20260701" type="text/javascript"></script>
+	<script src="./js/common.js?ver=20260707" type="text/javascript"></script>
 	<script src="./js/data_spl3.js?ver=20250611" type="text/javascript"></script>
 	<script src="./js/roulette.js?ver=20250329" type="text/javascript"></script>
 
@@ -251,9 +251,9 @@
 		</div>
 		<div class="col-6">
 			<div align="right">
-				<button type="button" class="btn btn-dark btn-sm" onClick="result_twitter1()"><i class="fab fa-x-twitter"></i></button> 
-				<button type="button" class="btn btn-primary btn-sm" onClick="result_Bsky1()"><i class="fa-brands fa-bluesky"></i></button> 
-				<button type="button" class="btn btn-success btn-sm" onClick="result_line1()"><i class="fab fa-line"></i></button> 
+				<button type="button" class="btn btn-dark btn-sm" onClick="postResultSNS('twitter',true)"><i class="fab fa-x-twitter"></i></button> 
+				<button type="button" class="btn btn-primary btn-sm" onClick="postResultSNS('bluesky',true)"><i class="fa-brands fa-bluesky"></i></button> 
+				<button type="button" class="btn btn-success btn-sm" onClick="postResultSNS('line',true)"><i class="fab fa-line"></i></button> 
 			</div>
 			<div align="right" style="display:none;">
 				<a href="./howto.html">>> 使い方</a>
@@ -286,9 +286,9 @@
 		</div>
 		<div class="col-9" align="right">
 			共有：
-			<button type="button" class="btn btn-dark btn-sm" onClick="result_twitter2()"><i class="fab fa-x-twitter"></i></button> 
-			<button type="button" class="btn btn-primary btn-sm" onClick="result_Bsky2()"><i class="fa-brands fa-bluesky"></i></button> 
-			<button type="button" class="btn btn-success btn-sm" onClick="result_line2()"><i class="fab fa-line"></i></button> 
+			<button type="button" class="btn btn-dark btn-sm" onClick="postResultSNS('twitter',false)"><i class="fab fa-x-twitter"></i></button> 
+			<button type="button" class="btn btn-primary btn-sm" onClick="postResultSNS('bluesky',false)"><i class="fa-brands fa-bluesky"></i></button> 
+			<button type="button" class="btn btn-success btn-sm" onClick="postResultSNS('line',false)"><i class="fab fa-line"></i></button> 
 			<input type="button" class="btn btn-outline-light btn-sm" value="コピー" onClick="result_copy()">
 		</div>
 	</div>
