@@ -28,7 +28,11 @@
 <BODY>
 	<main class="container">
 	<h1 class="page_title">サーモンラン オオモノシャケ討伐記録|スプラトゥーン3</h1>
-
+	<div align="right">
+		<button type="button" class="btn btn-dark btn-sm" onClick="postResultSNS('twitter',true)"><i class="fab fa-x-twitter"></i></button> 
+		<button type="button" class="btn btn-primary btn-sm" onClick="postResultSNS('bluesky',true)"><i class="fa-brands fa-bluesky"></i></button> 
+		<button type="button" class="btn btn-success btn-sm" onClick="postResultSNS('line',true)"><i class="fab fa-line"></i></button> 
+	</div>
 	<div class="accordion-item">
 		<div class="accordion-header" id="setting">
 			<button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#setting_body" aria-expanded="true" aria-controls="setting_body">
@@ -176,8 +180,8 @@
 	</main>
 
 	<script src="./js/common.js?ver=20260707" type="text/javascript"></script>
-	<script src="./js/data_salmon.js?ver=20260622" type="text/javascript"></script>
-	<script src="./js/chart.js?ver=20260702" type="text/javascript"></script>
+	<script src="./js/data_salmon.js?ver=20260709" type="text/javascript"></script>
+	<script src="./js/chart.js?ver=20260709" type="text/javascript"></script>
 	
 	<div id="div1"></div>
 	<script>write_navigation()</script>

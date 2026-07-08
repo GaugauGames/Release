@@ -7,21 +7,30 @@
 	<meta name="keywords" content="スプラトゥーン3,Splatoon3,サーモンラン,サモラン,オオモノシャケ討伐記録">
 	<meta name="description" content="サーモンランのオオモノシャケの討伐数を記録し、履歴管理・CSV出力・グラフ表示・SNS共有ができる無料ツールです。">
 
-	<script src="./js/common.js?ver=202624" type="text/javascript"></script>
+	<script src="./js/common.js?ver=20260707" type="text/javascript"></script>
+	<script>
+		// ハッシュタグ
+		var shareHashtag = "スプラトゥーン3,サーモンラン,オオモノシャケ討伐記録";
+	</script>
 
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-	<link href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" rel="stylesheet">
+	<link href="https://use.fontawesome.com/releases/v6.5.2/css/all.css" rel="stylesheet">
+	<link rel="stylesheet" href="./css/mainstyle.css" type="text/css">
 	<link rel="stylesheet" href="./css/howtostyle.css" type="text/css">
 	<style>
 		body { background:#c54b22 url(./img/logo_salmon.png) no-repeat 50% 10% fixed; }
 		a { color:cyan; }
 	</style>
 
-	<title>使い方</title>
+	<title>使い方|サーモンラン オオモノシャケ討伐記録</title>
 </head>
 <body>
-	<h2 class="page_title">このツールについて</h2>
-	<a href="./salmon_chart.html">>>オオモノシャケ討伐記録</a><br>
+	<div align="right">
+		<button type="button" class="btn btn-dark btn-sm" onClick="postResultSNS('twitter',true)"><i class="fab fa-x-twitter"></i></button> 
+		<button type="button" class="btn btn-primary btn-sm" onClick="postResultSNS('bluesky',true)"><i class="fa-brands fa-bluesky"></i></button> 
+		<button type="button" class="btn btn-success btn-sm" onClick="postResultSNS('line',true)"><i class="fab fa-line"></i></button> 
+	</div>
+	<h1 class="page_title">使い方 ：<a href="./salmon_chart.html">オオモノシャケ討伐記録</a></h1>
 	<p>
 	サーモンランのオオモノシャケ討伐数・金イクラ数などを記録し、
 	履歴として保存・可視化できるツールです。
@@ -37,7 +46,7 @@
 	<h2>基本の使い方</h2>
 
 	<ol>
-		<h4>【入力画面】</h4>
+		<h3>【入力画面】</h3>
 		<img src="./img/howto/chart01.png" class="howto-thumb"></img>
 		<img src="./img/howto/chart02.png" class="howto-thumb"></img>
 		<p class="howto-caption">入力画面 / イカリング3参照場所</p>
@@ -49,7 +58,7 @@
 			<strong>入力値</strong>：各オオモノ、オカシラを「たおした数」・「集めた金イクラ」の数(累計)を入力します。
 		</li>
 		<br>
-		<h4>【履歴操作】</h4>
+		<h3>【履歴操作】</h3>
 		<img src="./img/howto/chart03.png" class="howto-thumb"></img>
 		<p class="howto-caption">履歴保存・読込・CSV出力/読込</p>
 		<li>
@@ -68,7 +77,7 @@
 			<strong>CSV読込</strong>：ツールで出力したCSVファイルを読込・履歴に反映(編集したデータも取込可能)
 		</li>
 		<br>
-		<h4>【結果】</h4>
+		<h3>【結果】</h3>
 		<img src="./img/howto/chart04.png" class="howto-thumb"></img>
 		<img src="./img/howto/chart05.png" class="howto-thumb"></img>
 		<p class="howto-caption">分析結果</p>
@@ -85,27 +94,27 @@
 	</ol>
 
 	<br>
-	<h2>CSVについて</h2>
+	<h3>CSVについて</h3>
 
-	<h3>CSV出力</h3>
+	<h4>CSV出力</h4>
 	<ul>
 		<li>履歴データをCSV形式でダウンロードできます</li>
 		<li>Excelで開いて編集可能です</li>
 	</ul>
 
-	<h3>CSV取り込み</h3>
+	<h4>CSV取り込み</h4>
 	<ul>
 		<li>このツールで出力したCSVを読み込めます</li>
 		<li>同じ日付のデータは上書きされます</li>
 	</ul>
 
-	<h3>CSVの注意点</h3>
+	<h4>CSVの注意点</h4>
 	<ul>
 		<li>列名を変更すると読み込めません</li>
 		<li>CSVはカンマ区切りである必要があります</li>
 	</ul>
 	
-	<h2>注意事項</h2>
+	<h3>注意事項</h3>
 
 	<ul>
 		<li>データはブラウザに保存されます（ローカル保存）</li>

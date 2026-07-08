@@ -327,6 +327,7 @@ function renderHistoryChart(){
 	historyCtx.lineTo(pad.left, pad.top + chartH);
 	historyCtx.lineTo(pad.left + chartW, pad.top + chartH);
 	historyCtx.stroke();
+	const fontSize = 18;	// 目盛りのフォントサイズ
 
 	for (let i = 1; i <= 4; i++) {
 		const y = pad.top + chartH - (chartH * i / 4);
@@ -335,7 +336,7 @@ function renderHistoryChart(){
 		historyCtx.lineTo(pad.left + chartW, y);
 		historyCtx.strokeStyle = "#f1d8ca";
 		historyCtx.stroke();
-		drawText(historyCtx, String(Math.round(maxValue * i / 4)), pad.left - 8, y + 4, 11, "#7a4a36", 700, "right");
+		drawText(historyCtx, String(Math.round(maxValue * i / 4)), pad.left - 8, y + 4, fontSize, "#7a4a36", 700, "right");
 	}
 
 	historyCtx.beginPath();
@@ -358,8 +359,8 @@ function renderHistoryChart(){
 		historyCtx.strokeStyle = "#fff";
 		historyCtx.lineWidth = 2;
 		historyCtx.stroke();
-		drawText(historyCtx, String(p.value), x, y - 10, 11, "#2d160d", 800, "center");
-		drawText(historyCtx, p.date.slice(5), x, pad.top + chartH + 22, 11, "#7a4a36", 700, "center");
+		drawText(historyCtx, String(p.value), x, y - 10, fontSize, "#2d160d", 800, "center");
+		drawText(historyCtx, p.date.slice(5), x, pad.top + chartH + 22, fontSize, "#7a4a36", 700, "center");
 	});
 }
 
@@ -600,7 +601,7 @@ function drawDeltaTable(x, y, w, h, entry){
 			yy = yy - 3 * 44;
 		}
 		drawText(mainCtx, m.name, x + 20, yy, 20, "#2d160d", 800);
-		drawText(mainCtx, `今回　${v}`, x + 180, yy, 15, "#7a4a36", 700);
+		drawText(mainCtx, `${v}`, x + 300, yy, 20, "#7a4a36", 700, "right");
 		drawText(mainCtx, d > 0 ? `+${d}` : `${d}`, x + 400, yy, 18, d > 0 ? css("--plus") : css("--zero"), 900, "right");
 	});
 }
@@ -609,10 +610,22 @@ function drawDeltaTable(x, y, w, h, entry){
 // 描画：名前チップ
 // ----------------------------------------
 function drawNameChip(text, x, y, bg, angle){
-	const padX = 9; const w = Math.max(54, measureText(mainCtx, text, 20, 800) + padX * 2); const h = 26;
-	let left = x - w / 2, top = y - h / 2;
-	if (Math.cos(angle) > 0.35) left -= 4; if (Math.cos(angle) < -0.35) left += 4; if (Math.sin(angle) > 0.45) top += 4; if (Math.sin(angle) < -0.45) top -= 4;
-	fillRound(mainCtx, left, top, w, h, 13, bg); drawText(mainCtx, text, left + w / 2, top + 17, 20, "#ffffff", 900, "center");
+	const padX = 9;
+	const w = Math.max(54, measureText(mainCtx, text, 20, 800) + padX * 2);
+	const h = 26;
+	let left = x - w / 2
+	let top = y - h / 2 - 15;
+	// 角度に応じて位置を微調整
+	if (Math.cos(angle) > 0.35) left -= 4; 
+	if (Math.cos(angle) < -0.35) left += 4;
+
+	if (Math.sin(angle) > 0.45) top += 15;		// 下側
+	else if (Math.sin(angle) < -0.45) top += 4;	// 上側
+	else if (Math.sin(angle) > 0) top -= 28;	// 左右真横
+	else top -= 10;								// 左右上側
+
+	fillRound(mainCtx, left, top, w, h, 13, bg);
+	drawText(mainCtx, text, left + w / 2, top + 17, 20, "#ffffff", 900, "center");
 }
 
 function angleAt(index, total){ return Math.PI * 2 * index / total - Math.PI / 2; }

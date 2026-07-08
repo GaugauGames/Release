@@ -6,14 +6,21 @@ body {
 	padding-bottom: 4.5rem;
 }
 
-//form, table, textarea, select, input {
-//	margin:0px;
-//	padding:0px;
-//}
-
+/*
+form, table, textarea, select, input {
+	margin:0px;
+	padding:0px;
+}
+*/
 
 .page_title {
 	color:yellow;
+	font-size : 1.2rem;
+	font-family: "Arial Black", Gadget, sans-serif;
+}
+h2, h3, h4, h5, h6 {
+	font-size : 1rem;
+	font-family: "Arial Black", Gadget, sans-serif;
 }
 
 a {
@@ -34,17 +41,19 @@ img {
 	 white-space: nowrap;
 }
 
-//.label {
-//	border:solid 0px #FFFFFF;
-//	background-color:#FFFFFF;
-//	font-weight:bold;
-//	color:#880000;
-//	margin:0px;
-//	padding:1px 1px;
-//	width:90%
-//}
+/*
+.label {
+	border:solid 0px #FFFFFF;
+	background-color:#FFFFFF;
+	font-weight:bold;
+	color:#880000;
+	margin:0px;
+	padding:1px 1px;
+	width:90%
+}
+*/
 
-// 折り畳み部分調整
+/* 折り畳み部分調整 */
 .accordion-header {
 	padding:0.25rem;
 	color:#000000;
@@ -57,7 +66,7 @@ img {
 	padding:0.1rem;
 }
 
-// カラフルテキストエリア
+/* カラフルテキストエリア */
 .colorful-border textarea {
     border: 1px solid #ba68c8;
 }
