@@ -6,16 +6,18 @@ const HISTORY_CHART_LIMIT = 10;	// 履歴チャートに表示する最大件数
 
 const bossInputsEl = document.getElementById("bossInputs");
 const extraInputsEl = document.getElementById("extraInputs");
-const historyListEl = document.getElementById("historyList");
 const recordDateEl = document.getElementById("recordDate");
 const historyMetricSelectEl = document.getElementById("historyMetricSelect");
 const mainCanvas = document.getElementById("mainChart");
 const historyCanvas = document.getElementById("historyChart");
+const histListCanvas = document.getElementById("historyList");
 const mainCtx = mainCanvas.getContext("2d");
 const historyCtx = historyCanvas.getContext("2d");
+const histListCtx = histListCanvas.getContext("2d");
 const historySelect = document.getElementById("historySelect");
 const loadHistoryBtn = document.getElementById("loadHistoryBtn");
 const exportCsvBtn = document.getElementById("exportCsvBtn");
+const importCsvBtn = document.getElementById("importCsvBtn");
 const csvImportInput = document.getElementById("csvImportInput");
 const chartModeEl = document.getElementById("chartMode");
 
@@ -205,28 +207,44 @@ function resetInputs(){
 
 // 履歴一件分の詳細を表示
 function renderHistoryList(){
-	if (!historyState.length) {
-		historyListEl.innerHTML = '<p class="empty-text">履歴はまだありません。</p>';
+	const entry = getChartSourceEntry();
+
+	histListCtx.clearRect( 0, 0, histListCanvas.width, histListCanvas.height);
+	fillRound( histListCtx, 0, 0, histListCanvas.width, histListCanvas.height, 22, "#ffffff");
+
+	var x = 20;
+	var xx = 550;
+	var y = 20;
+
+	drawText( histListCtx, "履歴詳細：", x, y, 24, "#2d160d", 900 );
+	if (!entry){
+		drawText(histListCtx, "履歴はまだありません。", x, y + 30, 20, "#7a4a36", 700);
 		return;
 	}
-	let targetEntry = null;
+	drawText(histListCtx, `${entry.date} `, x + 125, y, 20, "#7a4a36", 700);
+	y += 35;
+	drawText(histListCtx, "項目", x, y, 20, "#2d160d", 800);
+	drawText(histListCtx, "値", x + 300, y, 20, "#2d160d", 700, "right");
+	drawText(histListCtx, "差分", x + 400, y, 20, "#2d160d", 900, "right");
+	drawText(histListCtx, "項目", xx, y, 20, "#2d160d", 800);
+	drawText(histListCtx, "値", xx + 300, y, 20, "#2d160d", 700, "right");
+	drawText(histListCtx, "差分", xx + 400, y, 20, "#2d160d", 900, "right");
 
-	// 選択している履歴があれば読込、なければ最新の履歴を読込
-	targetEntry = getChartSourceEntry();
+	y+=40
+	ALL_METRICS.forEach((m, i) => {
 
-	const rows = ALL_METRICS.map(metric => {
-		const value = targetEntry.values?.[metric.key] ?? 0;
-		const delta = targetEntry.deltas?.[metric.key] ?? 0;
-		const cls = delta > 0 ? 'plus' : delta === 0 ? 'zero' : 'minus';
-		return `<div class="history-grid-row"><span>${metric.name}</span><span class="num">${value}</span><span class="num delta ${cls}">${delta > 0 ? `+${delta}` : `${delta}`}</span></div>`;
-	}).join("");
+		let yy = y + i * 44; 
+		const v = entry.values?.[m.key] ?? 0; 
+		const d = entry.deltas?.[m.key] ?? 0;
+		if(i > 10){
+			x = xx;
+			yy = yy - 11 * 44;
+		}
+		drawText(histListCtx, m.name, x, yy, 20, "#2d160d", 800);
+		drawText(histListCtx, `${v}`, x + 300, yy, 20, "#7a4a36", 700, "right");
+		drawText(histListCtx, d > 0 ? `+${d}` : `${d}`, x + 400, yy, 20, d > 0 ? css("--plus") : css("--zero"), 900, "right");
+	});
 
-	historyListEl.innerHTML = `
-		<section class="history-entry">
-			<h3>${targetEntry.date}</h3>
-			<div class="history-grid-head"><span>項目</span><span class="num">値</span><span class="num">差分</span></div>
-			${rows}
-		</section>`;
 }
 
 // 履歴コンボボックスを設定
@@ -309,7 +327,7 @@ function renderHistoryChart(){
 		chartModeEl.value === CHART_MODE.DAILY_AVERAGE
 			? "日平均" : "差分";
 
-	drawText(historyCtx, `${metric.name} (${modeName})の推移(直近${HISTORY_CHART_LIMIT}件)`, 24, 36, 20, "#2d160d", 900);
+	drawText(historyCtx, `${metric.name} (${modeName})の推移(直近${HISTORY_CHART_LIMIT}件)`, 5, 20, 20, "#2d160d", 900);
 	if (!points.length) {
 		drawText(historyCtx, "履歴はまだありません。", 24, 72, 14, "#7a4a36", 700);
 		return;
@@ -469,15 +487,15 @@ function renderMainChart(data, stats, entry){
 	mainCtx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
 
 	fillRound(mainCtx, 0, 0, mainCanvas.width, mainCanvas.height, 28, "#ffffff");
-	drawText(mainCtx, "サーモンラン オオモノ討伐グラフ", 38, 58, 30, "#2d160d", 900);
+	drawText(mainCtx, "オオモノシャケ討伐グラフ", 38, 58, 30, "#2d160d", 900);
 	if (!entry){
 		drawText(mainCtx, "履歴はまだありません。", 45, 90, 20, "#7a4a36", 700);
 		return;
 	}
 
-	drawText(mainCtx, `${entry.date} の記録`, 38, 90, 20, "#7a4a36", 700);
+	drawText(mainCtx, `${entry.date} `, 425, 55, 20, "#7a4a36", 700);
 	// グラフ描画
-	const centerX = 600, centerY = 600, radius = 450, levels = 5, N = data.length;
+	const centerX = 500, centerY = 550, radius = 400, levels = 5, N = data.length;
 	for (let lv = 1; lv <= levels; lv++) {
 		const r = radius * (lv / levels);
 		mainCtx.beginPath();
@@ -531,22 +549,22 @@ function renderMainChart(data, stats, entry){
 	});
 
 	drawLegend();
-	drawTop3Card(50, 1120, 440, 220, stats.top3);
-	drawCategoryCard(500, 1120, 690, 220, stats);
-	drawDeltaTable(50, 1350, 1135, 200, entry);
+	drawTop3Card(20, 1050, 350, 220, stats.top3);
+	drawCategoryCard(380, 1050, 610, 220, stats);
+	drawDeltaTable(20, 1280, 970, 200, entry);
 }
 
 // ----------------------------------------
 // 描画：凡例
 // ----------------------------------------
 function drawLegend(){
-	[ [60, css("--near"), "近距離"], [170, css("--mid"), "中距離"], [280, css("--far"), "遠距離"] ].forEach(([x,c,label]) => {
-		mainCtx.beginPath(); mainCtx.arc(x, 110, 6, 0, Math.PI * 2); mainCtx.fillStyle = c; mainCtx.fill(); drawText(mainCtx, label, x + 14, 120, 20, "#7a4a36", 800);
+	[ [660, css("--near"), "近距離"], [770, css("--mid"), "中距離"], [880, css("--far"), "遠距離"] ].forEach(([x,c,label]) => {
+		mainCtx.beginPath(); mainCtx.arc(x, 50, 6, 0, Math.PI * 2); mainCtx.fillStyle = c; mainCtx.fill(); drawText(mainCtx, label, x + 14, 58, 20, "#7a4a36", 800);
 	});
-	mainCtx.beginPath();
-	mainCtx.moveTo(408, 104); mainCtx.lineTo(418, 109); mainCtx.lineTo(414, 119); mainCtx.lineTo(400, 115); mainCtx.lineTo(396, 105); mainCtx.closePath();
-	mainCtx.fillStyle = css("--primary-fill"); mainCtx.strokeStyle = css("--salmonrun"); mainCtx.lineWidth = 2; mainCtx.fill(); mainCtx.stroke();
-	drawText(mainCtx, "今回値", 426, 120, 20, "#7a4a36", 800);
+//	mainCtx.beginPath();
+//	mainCtx.moveTo(408, 104); mainCtx.lineTo(418, 109); mainCtx.lineTo(414, 119); mainCtx.lineTo(400, 115); mainCtx.lineTo(396, 105); mainCtx.closePath();
+//	mainCtx.fillStyle = css("--primary-fill"); mainCtx.strokeStyle = css("--salmonrun"); mainCtx.lineWidth = 2; mainCtx.fill(); mainCtx.stroke();
+//	drawText(mainCtx, "今回値", 426, 120, 20, "#7a4a36", 800);
 }
 
 // ----------------------------------------
@@ -575,7 +593,7 @@ function drawCategoryCard(x, y, w, h, stats){
 	const nearW = barW * (stats.byCategory.near / total), midW = barW * (stats.byCategory.mid / total), farW = barW * (stats.byCategory.far / total);
 	fillRound(mainCtx, barX, barY, barW, barH, 18, "#f7e4d8");
 	if (nearW > 0) fillRound(mainCtx, barX, barY, nearW, barH, 18, css("--near"));
-	if (midW > 0) fillRect(mainCtx, barX + nearW, barY, midW, barH, css("--mid"));
+	if (midW > 0) fillRound(mainCtx, barX + nearW, barY, midW, barH, 18, css("--mid"));
 	if (farW > 0) fillRound(mainCtx, barX + nearW + midW, barY, farW, barH, 18, css("--far"));
 
 	// 割合を計算して表示
@@ -583,7 +601,7 @@ function drawCategoryCard(x, y, w, h, stats){
 
 	drawText(mainCtx, `近距離 ${pct(stats.byCategory.near)}%`, x + 18, y + 124, 22, css("--near"), 900);
 	drawText(mainCtx, `中距離 ${pct(stats.byCategory.mid)}%`, x + 260, y + 124, 22, css("--mid"), 900);
-	drawText(mainCtx, `遠距離 ${pct(stats.byCategory.far)}%`, x + 500, y + 124, 22, css("--far"), 900);
+	drawText(mainCtx, `遠距離 ${pct(stats.byCategory.far)}%`, x + 450, y + 124, 22, css("--far"), 900);
 }
 
 // ----------------------------------------
@@ -597,7 +615,7 @@ function drawDeltaTable(x, y, w, h, entry){
 		const v = entry.values?.[m.key] ?? 0; 
 		const d = entry.deltas?.[m.key] ?? 0;
 		if(i > 2){
-			x = 600;
+			x = 530;
 			yy = yy - 3 * 44;
 		}
 		drawText(mainCtx, m.name, x + 20, yy, 20, "#2d160d", 800);
@@ -638,35 +656,83 @@ function fillRound(ctx, x, y, w, h, r, fill){ ctx.save(); roundRectPath(ctx, x, 
 function strokeRound(ctx, x, y, w, h, r, stroke){ ctx.save(); roundRectPath(ctx, x, y, w, h, r); ctx.strokeStyle = stroke; ctx.lineWidth = 1; ctx.stroke(); ctx.restore(); }
 function fillRect(ctx, x, y, w, h, fill){ ctx.save(); ctx.fillStyle = fill; ctx.fillRect(x, y, w, h); ctx.restore(); }
 function formatFileDate(date = new Date()){ const y=date.getFullYear(), m=String(date.getMonth()+1).padStart(2,"0"), d=String(date.getDate()).padStart(2,"0"), hh=String(date.getHours()).padStart(2,"0"), mm=String(date.getMinutes()).padStart(2,"0"); return `${y}${m}${d}-${hh}${mm}`; }
+
+// ----------------------------------------
+// 描画：メインチャートを画像保存
+// ----------------------------------------
 function saveImage(){
-	 const a=document.createElement("a");
-	 a.download=`salmon-chart-${formatFileDate()}.png`;
-	 a.href=mainCanvas.toDataURL("image/png");
-	 a.click(); 
+
+	const entry = getChartSourceEntry();
+	if (!entry){
+ 		alert( "履歴がありません。");
+		return;
 	}
+	const a=document.createElement("a");
+	a.download=`salmon-chart-${formatFileDate()}.png`;
+	a.href=mainCanvas.toDataURL("image/png");
+	a.click(); 
+}
+
+// ----------------------------------------
+// 描画：履歴チャートと履歴リストを結合して画像保存
+// ----------------------------------------
+function saveHistoryImage() {
+
+	const entry = getChartSourceEntry();
+	if (!entry){
+ 		alert( "履歴がありません。");
+		return;
+	}
+	const canvas = document.createElement("canvas");
+	const ctx = canvas.getContext("2d");
+	// 幅：大きい方
+	canvas.width = Math.max(
+			historyCanvas.width,
+			histListCanvas.width
+		) + 60;
+	// 高さ：合計
+	canvas.height =
+		historyCanvas.height +
+		histListCanvas.height + 100;
+
+	ctx.fillStyle = "#fff";
+	fillRound(ctx, 0, 0, canvas.width, canvas.height , 22, "#ffffff");
+
+	// 履歴チャートと履歴リストを結合して描画
+	ctx.drawImage( histListCanvas, 20, 40 );
+	ctx.drawImage( historyCanvas, 20, histListCanvas.height + 80 );
+
+	const a = document.createElement("a");
+	a.download=`salmon-history-${formatFileDate()}.png`;
+	a.href = canvas.toDataURL("image/png");
+
+	a.click();
+}
 
 // 投稿用テキストを編集
 function editShareText(type){
 	share_txt = "";
 
 	const entry = getChartSourceEntry();
-	const bossData = orderedBossData(entry);
-	const stats = bossStatsFrom(bossData);
-	const deltas = entry.deltas
+	if (entry){
+		// 履歴があれば投稿用のデータを取得して共有テキストを編集
+		const bossData = orderedBossData(entry);
+		const stats = bossStatsFrom(bossData);
+		const deltas = entry.deltas
 
-	const top3 = stats.top3.map((d,i)=>`${i+1}位 ${d.name} ${d.value}(+${deltas?.[d.key]})`).join("\n");
-	//const eggs = entry.values["goldenEggs"] ?? 0;
+		const top3 = stats.top3.map((d,i)=>`${i+1}位 ${d.name} ${d.value}(+${deltas?.[d.key]})`).join("\n");
+		//const eggs = entry.values["goldenEggs"] ?? 0;
 
-	const textPrefix=("オオモノ討伐数を更新！").trim();
-	const text = `${textPrefix}\n${entry.date || todayISO()}\nTOP3\n${top3}\n`;
-					//\n\n金イクラ ${eggs}\n`;
+		const textPrefix=("オオモノ討伐数を更新！").trim();
+		const text = `${textPrefix}\n${entry.date || todayISO()}\nTOP3\n${top3}\n`;
+						//\n\n金イクラ ${eggs}\n`;
 
-	add_result_txt(text);
+		add_result_txt(text);
+	}
 
 	if (type === "clipboard"){
 		result_copy();
-	}
-	else{
+	}else{
 		postResultSNS(type, false);
 	}
 }
@@ -971,16 +1037,14 @@ function handleCsvImportFile(file) {
 // ----------------------------------------
 // イベント登録
 // ----------------------------------------
-if (exportCsvBtn) {
-	exportCsvBtn.addEventListener("click", exportCSV);
-}
-
-if (csvImportInput) {
-	csvImportInput.addEventListener("change", e => {
-		const file = e.target.files?.[0];
-		handleCsvImportFile(file);
-	});
-}
+exportCsvBtn.addEventListener("click", exportCSV);
+csvImportInput.addEventListener("change", e => {
+	const file = e.target.files?.[0];
+	handleCsvImportFile(file);
+});
+importCsvBtn.addEventListener("click", () => {
+    csvImportInput.click();
+});
 
 // init
 buildGrid(bossInputsEl, BOSS_METRICS);
@@ -994,6 +1058,7 @@ renderAll();
 renderHistoryChart();
 
 document.getElementById("saveImageBtn").addEventListener("click", saveImage);
+document.getElementById("saveHistoryImageBtn").addEventListener("click", saveHistoryImage);
 document.getElementById("saveHistoryBtn").addEventListener("click", () => { saveSnapshot(); alert("今回の内容を日付順で履歴保存し、差分を再計算しました。"); });
 document.getElementById("clearHistoryBtn").addEventListener("click", () => { clearHistory(); alert("履歴を削除しました。"); });
 document.getElementById("resetBtn").addEventListener("click", resetInputs);

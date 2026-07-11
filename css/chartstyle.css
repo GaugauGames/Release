@@ -31,18 +31,18 @@ button,input,select{font:inherit}
 .input-section{margin-top:12px}
 .input-section h3{margin:0 0 8px;font-size:14px;color:var(--muted)}
 .date-row{margin-bottom:10px}
-.date-field,.share-box label,.history-filter{display:grid;gap:6px}
-.date-field span,.share-box span,.history-filter span{font-size:12px;font-weight:700;color:var(--muted)}
-.date-field input,.share-box input,.history-filter select{width:100%;border:1px solid var(--border);border-radius:12px;background:#fff;padding:11px 12px;color:var(--text)}
+.date-field,.history-filter{display:grid;gap:6px}
+.date-field span,.history-filter span{font-size:10px;font-weight:700;color:var(--muted)}
+.date-field input,.input,.history-filter select{font-size:12px;width:100%;border:1px solid var(--border);border-radius:12px;background:#fff;padding:11px 12px;color:var(--text)}
 .metric-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
-.metric-cell{color:white;:var(--surface-2);border:1px solid var(--border);border-radius:16px;padding:10px;display:grid;gap:6px;min-width:0}
+.metric-cell{margin:0px;padding:0px;color:white;:var(--surface-2);border:1px solid var(--border);border-radius:16px;padding:3px;display:grid;gap:6px;min-width:0}
 .metric-cell.near{box-shadow:inset 0 0 0 1px rgba(249,115,22,.08);background:var(--near)}
 .metric-cell.mid{box-shadow:inset 0 0 0 1px rgba(245,158,11,.08);background:var(--mid)}
 .metric-cell.far{box-shadow:inset 0 0 0 1px rgba(239,68,68,.08);background:var(--far)}
 .metric-cell.extra{box-shadow:inset 0 0 0 1px rgba(139,92,246,.10);background:var(--extra)}
 .metric-title{font-size:13px;font-weight:800;line-height:1.25;min-height:32px;display:flex;align-items:center;justify-content:center;text-align:center}
 .metric-input{width:100%;text-align:center;border-radius:12px;border:1px solid var(--border);background:#fff;padding:10px 8px;font-weight:700}
-.btn{border:none;border-radius:14px;padding:12px 14px;font-weight:800;cursor:pointer}
+.btn{border:none;border-radius:14px;padding:7px 10px;font-weight:800;cursor:pointer}
 .btn-ghost{background:#fff3eb;color:#7a4a36;border:1px solid rgba(197,75,34,.12)}
 .note{margin:14px 0 0;font-size:12px;color:var(--muted)}
 .output-panel{display:grid;gap:16px}
@@ -52,13 +52,6 @@ canvas{width:100%;height:auto;display:block;background:#fff}
 .history-header{display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between;align-items:end}
 .history-layout{display:grid;grid-template-columns:1fr;gap:16px;margin-top:12px}
 .history-list-wrap,.history-chart-wrap{border:1px solid var(--border);border-radius:18px;background:#fff;padding:12px;overflow:auto}
-.history-entry{border-top:1px solid #f4d5c6;padding-top:10px;margin-top:10px}
-.history-entry:first-child{margin-top:0;border-top:none;padding-top:0}
-.history-entry h3{margin:0 0 8px;font-size:14px}
-.history-grid-head,.history-grid-row{display:grid;grid-template-columns:minmax(90px,1fr) 58px 58px;gap:8px;font-size:12px;align-items:center}
-.history-grid-head{font-weight:800;color:var(--muted);margin-bottom:6px}
-.history-grid-row .num{text-align:right}
-.empty-text{color:var(--muted);font-size:13px}
 @media (min-width: 960px){
 }
 @media (min-width: 1180px){

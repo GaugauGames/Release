@@ -8,7 +8,7 @@
 	<meta name="keywords" content="スプラトゥーン3,Splatoon3,サーモンラン,サモラン,オオモノシャケ討伐記録">
 	<meta name="description" content="サーモンランのオオモノシャケの討伐数を記録し、履歴管理・CSV出力・グラフ表示・SNS共有ができる無料ツールです。">
 
-	<meta property="og:title" content="サーモンラン オオモノシャケ討伐記録|スプラトゥーン3">
+	<meta property="og:title" content="オオモノシャケ討伐記録|サーモンランNW">
 	<meta property="og:description" content="サーモンランのオオモノシャケの討伐数を記録し、履歴管理・CSV出力・グラフ表示・SNS共有ができる無料ツールです。">
 	<meta property="og:url" content="https://gaurin.netlify.app/salmon_chart.html">
 	<meta property="og:type" content="website">
@@ -23,11 +23,11 @@
 		body { background:#c54b22 url(./img/logo_salmon.png) no-repeat 50% 10% fixed; }
 	</style>
 
-	<title>サーモンラン オオモノシャケ討伐記録|スプラトゥーン3</title>
+	<title>オオモノシャケ討伐記録|サーモンランNW</title>
 </HEAD>
 <BODY>
 	<main class="container">
-	<h1 class="page_title">サーモンラン オオモノシャケ討伐記録|スプラトゥーン3</h1>
+	<h1 class="page_title">オオモノシャケ討伐記録|サーモンランNW</h1>
 	<div align="right">
 		<button type="button" class="btn btn-dark btn-sm" onClick="postResultSNS('twitter',true)"><i class="fab fa-x-twitter"></i></button> 
 		<button type="button" class="btn btn-primary btn-sm" onClick="postResultSNS('bluesky',true)"><i class="fa-brands fa-bluesky"></i></button> 
@@ -43,8 +43,9 @@
 			<div class="accordion-body">
 				<p class="note">
 				オオモノシャケの討伐数をレーダーチャートに表します。<br>
-				オオモノシャケに加え、オカシラシャケ、金イクラ納品数を過去20件まで記録し、増分を見れます。
-				記録したい日付とその時の討伐数等を入力してください。<br>
+				オオモノシャケに加え、オカシラシャケ、金イクラ納品数を過去20件まで記録し、<br>
+				前回履歴からの差分を見れます。<br>
+				記録したい日付とその時の討伐数等(累計)を入力して【保存】を押してください。<br>
 				<a href="./howto_chart.html" target="_blank">>> 使い方</a></p>
 				<br>
 				<div class="date-row">
@@ -95,8 +96,8 @@
 				<div class="row">
 					<div class="col-12">
 						<button id="exportCsvBtn" class="btn btn-ghost">CSV出力</button>
-						<br>CSV取込
-						<input type="file" id="csvImportInput" accept=".csv,text/csv" class="btn btn-ghost">
+						<button id="importCsvBtn" class="btn btn-ghost">CSV取込</button>
+						<input type="file" id="csvImportInput" accept=".csv,text/csv" class="btn btn-ghost" style="display:none">
 					</div>
 				</div>
 			</div>
@@ -104,7 +105,6 @@
 	</div>
 
 	<div align="right">
-		<button id="saveImageBtn" class="btn btn-ghost btn-sm">画像保存</button>
 		投稿：
 		<button type="button" class="btn btn-dark btn-sm" id="btnSNSTwitter"><i class="fab fa-x-twitter"></i></button> 
 		<button type="button" class="btn btn-primary btn-sm" id="btnSNSBluesky"><i class="fa-brands fa-bluesky"></i></button> 
@@ -114,35 +114,38 @@
 
 	<section class="panel output-panel">
 		<div class="canvas-card">
-			<canvas id="mainChart" width="1200" height="1580"></canvas>
+			<button id="saveImageBtn" class="btn btn-ghost btn-sm">画像保存１</button>
+			<canvas id="mainChart" width="1000" height="1500"></canvas>
 		</div>
 	</section>
 	
 	<section class="panel history-panel">
 		<div class="history-header">
-			<h2>履歴詳細</h2>
-			<label class="history-filter">
-				<div class="row">
-					<div class="col-4">
-					</div>
-					<div class="col-4">
+			<div class="row" >
+				<div class="col-5">
+					<button id="saveHistoryImageBtn" class="btn btn-ghost btn-sm">画像保存２</button>
+				</div>
+				<div class="col-4">
+					<label class="history-filter">
 						<span>グラフ対象</span>
+					</label>
 						<select id="historyMetricSelect"></select>
-					</div>
-					<div class="col-4">
+				</div>
+				<div class="col-3">
+					<label class="history-filter">
 						<span>表示モード</span>
+					</label>
 						<select id="chartMode">
 							<option value="delta">差分</option>
 							<option value="dailyAverage">日平均</option>
 						</select>
-					</div>
 				</div>
-			</label>
+			</div>
 		</div>
 
 		<div class="history-layout">
 			<div class="history-list-wrap">
-				<div id="historyList"></div>
+				<canvas id="historyList" width="1000" height="550"></canvas>
 			</div>
 			<div class="history-chart-wrap">
 				<canvas id="historyChart" width="920" height="360"></canvas>
@@ -154,6 +157,9 @@
 	<table class="table table-dark table-striped">
 		<thead><tr><td class="td_nowrap">更新日</td><td>内容</td></tr></thead>
 		<tbody>
+		<tr><td>2026/7/10</td>
+			<td>履歴詳細の画像保存対応、他</td>
+		</tr>
 		<tr><td>2026/7/7</td>
 			<td>履歴詳細の折れ線グラフの種類に「差分」と「日平均」を追加</td>
 		</tr>
@@ -181,7 +187,7 @@
 
 	<script src="./js/common.js?ver=20260707" type="text/javascript"></script>
 	<script src="./js/data_salmon.js?ver=20260709" type="text/javascript"></script>
-	<script src="./js/chart.js?ver=20260709" type="text/javascript"></script>
+	<script src="./js/chart.js?ver=20260710" type="text/javascript"></script>
 	
 	<div id="div1"></div>
 	<script>write_navigation()</script>
