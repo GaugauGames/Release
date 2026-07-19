@@ -20,6 +20,8 @@ const exportCsvBtn = document.getElementById("exportCsvBtn");
 const importCsvBtn = document.getElementById("importCsvBtn");
 const csvImportInput = document.getElementById("csvImportInput");
 const chartModeEl = document.getElementById("chartMode");
+const memoInputEl = document.getElementById("memoInput");
+const memoTooltipEl = document.getElementById("memoTooltip");
 
 function css(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
 const CATEGORY_COLOR = { near: css("--near"), mid: css("--mid"), far: css("--far"), extra: css("--extra") };
@@ -35,10 +37,16 @@ function todayISO(date = new Date()){
 function defaults(){ return Object.fromEntries(ALL_METRICS.map(m => [m.key, 0])); }
 function loadJSON(key, fallback){ try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback; } catch { return fallback; } }
 
-let currentState = loadJSON(STORAGE_CURRENT, { date: todayISO(), values: defaults() });
+let currentState = loadJSON(
+	STORAGE_CURRENT, {
+		 date: todayISO(),
+		 memo: "",
+		 values: defaults()
+		 });
 let historyState = Array.isArray(loadJSON(STORAGE_HISTORY, [])) ? loadJSON(STORAGE_HISTORY, []) : [];
 if (!currentState.values) currentState.values = defaults();
 if (!currentState.date) currentState.date = todayISO();
+let historyHitPoints = [];
 
 function saveCurrent(){ localStorage.setItem(STORAGE_CURRENT, JSON.stringify(currentState)); }
 function saveHistory(){ localStorage.setItem(STORAGE_HISTORY, JSON.stringify(historyState.slice(-HISTORY_LIMIT))); }
@@ -77,6 +85,9 @@ function initCurrentFromLatestHistoryWithTodayDate(){
 
 	// 日付フィールド反映
 	recordDateEl.value = currentState.date;
+
+	// メモ欄反映
+	memoInputEl.value = (todayEntry ? currentState.memo || "" : "");
 
 	// 入力欄へ反映
 	document.querySelectorAll(".metric-input").forEach(input => {
@@ -159,6 +170,7 @@ function saveSnapshot(){
 	// 保存データ
 	const entry = {
 		date,
+		memo: memoInputEl.value.trim(),
 		values: { ...defaults(), ...currentState.values },
 		createdAt: new Date().toISOString(),
 		deltas: {}
@@ -192,11 +204,12 @@ function saveSnapshot(){
 
 // 入力欄を初期化(0にする)
 function resetInputs(){
-	currentState = { date: todayISO(), values: defaults() };
+	currentState = { date: todayISO(), memo: "", values: defaults() };
 	saveCurrent();
 
 	// UIに反映
 	recordDateEl.value = currentState.date;
+	memoInputEl.value = currentState.memo;
 	share_txt = "";
 
 	document.querySelectorAll(".metric-input").forEach(input => {
@@ -221,6 +234,7 @@ function renderHistoryList(){
 		drawText(histListCtx, "履歴はまだありません。", x, y + 30, 20, "#7a4a36", 700);
 		return;
 	}
+	// 日付を描画
 	drawText(histListCtx, `${entry.date} `, x + 125, y, 20, "#7a4a36", 700);
 	y += 35;
 	drawText(histListCtx, "項目", x, y, 20, "#2d160d", 800);
@@ -230,10 +244,12 @@ function renderHistoryList(){
 	drawText(histListCtx, "値", xx + 300, y, 20, "#2d160d", 700, "right");
 	drawText(histListCtx, "差分", xx + 400, y, 20, "#2d160d", 900, "right");
 
+	// データを描画
 	y+=40
+	let yy = 0
 	ALL_METRICS.forEach((m, i) => {
 
-		let yy = y + i * 44; 
+		yy = y + i * 44; 
 		const v = entry.values?.[m.key] ?? 0; 
 		const d = entry.deltas?.[m.key] ?? 0;
 		if(i > 10){
@@ -244,6 +260,11 @@ function renderHistoryList(){
 		drawText(histListCtx, `${v}`, x + 300, yy, 20, "#7a4a36", 700, "right");
 		drawText(histListCtx, d > 0 ? `+${d}` : `${d}`, x + 400, yy, 20, d > 0 ? css("--plus") : css("--zero"), 900, "right");
 	});
+	// メモ欄
+	y = yy + 70;
+	drawText(histListCtx, "メモ：", xx, y, 20, "#2d160d", 700);
+	drawText(histListCtx, `${entry.memo || "なし"}`, xx + 70, y, 20, "#7a4a36", 700);
+
 
 }
 
@@ -275,6 +296,9 @@ function updateHistorySelect(){
 	}
 }
 
+// ----------------------------------------
+// 履歴を選択したとき、入力欄に反映
+// ----------------------------------------
 function loadSelectedHistoryIntoForm(){
 	const idx = Number(historySelect.value);
 	const entry = historyState[idx];
@@ -283,9 +307,8 @@ function loadSelectedHistoryIntoForm(){
 
 	// 値をコピー
 	currentState.values = { ...entry.values };
-
-	// 日付も切り替える
 	currentState.date = entry.date;
+	currentState.memo = entry.memo;
 
 	saveCurrent();
 
@@ -296,7 +319,9 @@ function loadSelectedHistoryIntoForm(){
 	});
 
 	// 日付欄反映
-	document.getElementById("recordDate").value = entry.date;
+	recordDateEl.value = entry.date;
+	// メモ欄反映
+	memoInputEl.value = entry.memo || "";
 
 	renderAll();
 }
@@ -311,6 +336,7 @@ function renderHistoryChart(){
 
 	const chartMode = chartModeEl.value || CHART_MODE.DELTA;
 	let points = [];
+	historyHitPoints = [];
 
 	switch (chartMode) {
 		case CHART_MODE.DELTA:
@@ -378,7 +404,32 @@ function renderHistoryChart(){
 		historyCtx.lineWidth = 2;
 		historyCtx.stroke();
 		drawText(historyCtx, String(p.value), x, y - 10, fontSize, "#2d160d", 800, "center");
-		drawText(historyCtx, p.date.slice(5), x, pad.top + chartH + 22, fontSize, "#7a4a36", 700, "center");
+
+		// 日付ラベルを描画、メモがある場合は📝を付与
+		const dateLabel = p.memo ? `${p.date.slice(5)}📝` : p.date.slice(5);
+		drawText(historyCtx, dateLabel, x, pad.top + chartH + 22, fontSize, "#7a4a36", 700, "center");
+	
+		// 日付ラベルの幅を測定して、ヒットポイントに追加
+		const labelWidth = measureText( historyCtx, dateLabel, 11, 700 );
+		historyHitPoints.push({
+			x,
+			y: pad.top + chartH + 22,
+			memo: p.memo ?? "",
+			date: p.date,
+
+			left: x - labelWidth / 2,
+			right: x + labelWidth / 2,
+			top: pad.top + chartH + 10,
+			bottom: pad.top + chartH + 30
+		});
+		// debug: ヒットポイントをコンソールに出力
+		// var lastPoint = historyHitPoints[historyHitPoints.length - 1];
+		// console.log(
+		// 	p.date,
+		// 	lastPoint.left.toFixed(1), 
+		// 	lastPoint.right.toFixed(1), 
+		// 	lastPoint.top.toFixed(1), 
+		// 	lastPoint.bottom.toFixed(1));
 	});
 }
 
@@ -399,6 +450,7 @@ function buildDeltaPoints(metricKey) {
 		.slice(-HISTORY_CHART_LIMIT)
 		.map(entry => ({
 			date: entry.date,
+			memo: entry.memo ?? "",
 			value: entry.deltas?.[metricKey] ?? 0
 		}));
 }
@@ -425,12 +477,58 @@ function buildDailyAveragePoints(metricKey) {
 			);
 		points.push({
 			date: current.date,
+			memo: current.memo ?? "",
 			value: Number(
 				((currentValue - previousValue) / days).toFixed(1)
 			)
 		});
 	}
 	return points.slice(-HISTORY_CHART_LIMIT);
+}
+
+// ----------------------------------------
+// 描画：メモツールチップ
+// ----------------------------------------
+function rendermemoTooltip(e){
+    const rect = historyCanvas.getBoundingClientRect();
+	const scaleX = historyCanvas.width / rect.width;
+	const scaleY = historyCanvas.height / rect.height;
+	const mx = (e.clientX - rect.left) * scaleX;
+	const my = (e.clientY - rect.top) * scaleY;
+ 
+	const hit = historyHitPoints.find(p =>
+        mx >= p.left  &&
+        mx <= p.right &&
+        my >= p.top   &&
+        my <= p.bottom
+    );
+	// debug: ヒット判定の座標をコンソールに出力
+	// console.log(mx.toFixed(1), my.toFixed(1), hit);
+
+	if (!hit) {
+        memoTooltipEl.style.display = "none";
+        return;
+    }
+    memoTooltipEl.innerHTML = `
+		<strong>${hit.date}</strong><br>
+        ${hit.memo || "メモなし"}`;
+
+	// ツールチップの初期位置をリセット
+	memoTooltipEl.style.left = `0px`;
+	memoTooltipEl.style.top = `0px`;
+    memoTooltipEl.style.display = "block";
+
+	const tooltipWidth = memoTooltipEl.offsetWidth;
+	let left = hit.x / scaleX + 25;
+	if( left + tooltipWidth > rect.width){
+		left = hit.x / scaleX - tooltipWidth - 10;
+	}
+	let top = hit.y / scaleY - 20;
+	if(top < 0){
+		top = hit.y / scaleY + 20;
+	}
+	memoTooltipEl.style.left = `${left}px`;
+	memoTooltipEl.style.top = `${top}px`;
 }
 
 function renderAll(){
@@ -771,6 +869,7 @@ function exportCSV() {
 	// 1) ヘッダー
 	const headers = [
 		"日付",
+		"メモ",
 		...ALL_METRICS.map(m => m.name),
 		...ALL_METRICS.map(m => `${m.name}(差分)`)
 	];
@@ -779,6 +878,7 @@ function exportCSV() {
 	const rows = historyState.map(entry => {
 		return [
 			entry.date,
+			entry.memo,
 			...ALL_METRICS.map(m => entry.values?.[m.key] ?? 0),
 			...ALL_METRICS.map(m => entry.deltas?.[m.key] ?? 0)
 		];
@@ -843,7 +943,8 @@ function parseCsvLine(line) {
 // ----------------------------------------
 function buildNameToKeyMap() {
 	const map = {
-		"日付": "date"
+		"日付": "date",
+		"メモ": "memo"
 	};
 
 	ALL_METRICS.forEach(m => {
@@ -958,6 +1059,7 @@ function importCSVText(text) {
 
 		const entry = {
 			date: normalizedDate,
+			memo: record.memo || "",
 			createdAt: new Date().toISOString(),
 			values: { ...defaults() },
 			deltas: {}
@@ -983,6 +1085,7 @@ function importCSVText(text) {
 	historyState.forEach(entry => {
 		mergedMap.set(entry.date, {
 			date: entry.date,
+			memo: entry.memo || "",
 			createdAt: entry.createdAt || new Date().toISOString(),
 			values: { ...defaults(), ...entry.values },
 			deltas: { ...(entry.deltas || {}) }
@@ -1069,3 +1172,4 @@ document.getElementById("btnSNSLine").addEventListener("click", () => { editShar
 document.getElementById("btnCopyText").addEventListener("click", () => { editShareText("clipboard"); });
 loadHistoryBtn.addEventListener("click", loadSelectedHistoryIntoForm);
 historySelect.addEventListener("change", () => {renderHistoryList(); renderAll();});
+historyCanvas.addEventListener("click", e => {rendermemoTooltip(e);});

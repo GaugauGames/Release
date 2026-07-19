@@ -218,6 +218,8 @@ function result_copy()
 	textarea.select();
 	const success = document.execCommand("copy");
 	document.body.removeChild(textarea);
+
+	alert(success ? "クリップボードに以下をコピーしました。\n-------\n"+ tmp_txt : "コピーに失敗しました");
 }
 
 function setModal()
