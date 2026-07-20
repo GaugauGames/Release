@@ -393,6 +393,9 @@ function renderHistoryChart(){
 	historyCtx.lineWidth = 3;
 	historyCtx.stroke();
 
+	// ツールチップの初期位置をリセット
+	resetMemoTooltip();
+
 	points.forEach((p, i) => {
 		const x = pad.left + (chartW * i / Math.max(1, points.length - 1));
 		const y = pad.top + chartH - (p.value / maxValue) * chartH;
@@ -413,7 +416,7 @@ function renderHistoryChart(){
 		const labelWidth = measureText( historyCtx, dateLabel, 11, 700 );
 		historyHitPoints.push({
 			x,
-			y: pad.top + chartH + 22,
+			y: pad.top + chartH + 15,
 			memo: p.memo ?? "",
 			date: p.date,
 
@@ -422,6 +425,7 @@ function renderHistoryChart(){
 			top: pad.top + chartH + 10,
 			bottom: pad.top + chartH + 30
 		});
+
 		// debug: ヒットポイントをコンソールに出力
 		// var lastPoint = historyHitPoints[historyHitPoints.length - 1];
 		// console.log(
@@ -505,21 +509,20 @@ function rendermemoTooltip(e){
 	// debug: ヒット判定の座標をコンソールに出力
 	// console.log(mx.toFixed(1), my.toFixed(1), hit);
 
+	// ツールチップの初期位置をリセット
+	resetMemoTooltip();
+
 	if (!hit) {
-        memoTooltipEl.style.display = "none";
         return;
     }
+
     memoTooltipEl.innerHTML = `
 		<strong>${hit.date}</strong><br>
         ${hit.memo || "メモなし"}`;
 
-	// ツールチップの初期位置をリセット
-	memoTooltipEl.style.left = `0px`;
-	memoTooltipEl.style.top = `0px`;
-    memoTooltipEl.style.display = "block";
-
+	memoTooltipEl.style.display = "block";
 	const tooltipWidth = memoTooltipEl.offsetWidth;
-	let left = hit.x / scaleX + 25;
+	let left = hit.x / scaleX + 27;
 	if( left + tooltipWidth > rect.width){
 		left = hit.x / scaleX - tooltipWidth - 10;
 	}
@@ -529,6 +532,16 @@ function rendermemoTooltip(e){
 	}
 	memoTooltipEl.style.left = `${left}px`;
 	memoTooltipEl.style.top = `${top}px`;
+}
+
+// ----------------------------------------
+// 描画：メモツールチップを初期化
+// ----------------------------------------
+function resetMemoTooltip(){
+	memoTooltipEl.style.left = `0px`;
+	memoTooltipEl.style.top = `0px`;
+    memoTooltipEl.style.display = "none";
+	memoTooltipEl.innerHTML = "";
 }
 
 function renderAll(){
