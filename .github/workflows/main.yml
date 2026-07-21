@@ -1,0 +1,70 @@
+name: IndexNow Notify
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Get changed files
+        id: changes
+        uses: tj-actions/changed-files@v39
+
+      - name: Notify IndexNow
+        run: |
+          KEY="9f8154ce084b4b55802083b2179314d2"
+          KEY_URL="https://gaurin.netlify.app/${KEY}.txt"
+          HOST="gaurin.netlify.app"
+
+          # 変更された HTML ファイルだけ抽出
+          URLS=""
+          for file in ${{ steps.changes.outputs.all_changed_files }}; do
+            if [[ "$file" == *.html ]]; then
+              URLS="$URLS \"https://gaurin.netlify.app/$file\","
+            fi
+          done
+
+          # HTML の変更がない場合は終了
+          if [ -z "$URLS" ]; then
+            echo "No HTML changes. Skipping IndexNow."
+            exit 0
+          fi
+
+          # JSON 生成
+          JSON=$(cat <<EOF
+{
+  "host": "$HOST",
+  "key": "$KEY",
+  "keyLocation": "$KEY_URL",
+  "urlList": [${URLS%?}]
+}
+EOF
+)
+
+          echo "Sending IndexNow notification..."
+          echo "$JSON"
+
+          # 3回まで再送（指数バックオフ）
+          for i in 1 2 3; do
+            RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" \
+              -X POST -H "Content-Type: application/json" \
+              -d "$JSON" https://api.indexnow.org/IndexNow)
+
+            if [ "$RESPONSE" = "200" ]; then
+              echo "IndexNow notification succeeded."
+              exit 0
+            else
+              echo "Attempt $i failed (HTTP $RESPONSE). Retrying..."
+              sleep $((2 ** i))
+            fi
+          done
+
+          echo "IndexNow notification failed after 3 attempts."
+          exit 1
