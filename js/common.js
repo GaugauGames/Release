@@ -181,8 +181,9 @@ function add_result_txt(txt)
 function postResultSNS(type, blank)
 {
 	var tmp_txt = (share_txt ==""|blank) ? document.title + "\n" : share_txt;
-	if(type != "twitter")
+	//if(type != "twitter")
 	{
+		// ハッシュタグ、URLを追加
 		tmp_txt = tmp_txt + " #" + shareHashtag.replace(/\,/g," #") + "\n" + document.URL;
 	}
 	// パーセントエンコード変換
@@ -190,8 +191,9 @@ function postResultSNS(type, blank)
 	var url_txt = "";
 	switch(type){
 		case "twitter":	// X(旧Twitter)に投稿
-			url_txt = "https://x.com/intent/tweet?hashtags=" + shareHashtag + 
-						"&text="+ tmp_txt + "&url=" + document.URL;
+			// url_txt = "https://x.com/intent/tweet?hashtags=" + shareHashtag + 
+			// 			"&text="+ tmp_txt + "&url=" + document.URL;
+			url_txt = "https://x.com/intent/tweet?text=" + tmp_txt; 
 			break;
 		case "line": // LINEに共有
 			url_txt = "https://line.me/R/share?text="+ tmp_txt;
