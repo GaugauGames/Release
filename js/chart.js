@@ -422,8 +422,8 @@ function renderHistoryChart(){
 
 			left: x - labelWidth / 2,
 			right: x + labelWidth / 2,
-			top: pad.top + chartH + 10,
-			bottom: pad.top + chartH + 30
+			top: pad.top + chartH - 30,
+			bottom: pad.top + chartH + 50
 		});
 
 		// debug: ヒットポイントをコンソールに出力
@@ -526,7 +526,7 @@ function rendermemoTooltip(e){
 	if( left + tooltipWidth > rect.width){
 		left = hit.x / scaleX - tooltipWidth - 10;
 	}
-	let top = hit.y / scaleY - 20;
+	let top = hit.y / scaleY - 30;
 	if(top < 0){
 		top = hit.y / scaleY + 20;
 	}
